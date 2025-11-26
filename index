@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Subject Line Localization Table</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #fff; color: #000; margin: 0; }
+    header { padding: 24px; border-bottom: 1px solid #ccc; background: #fff; }
+    h1 { margin: 0 0 8px; font-size: 20px; }
+    main { max-width: 800px; margin: 32px auto; padding: 0 24px; }
+    .controls { margin-bottom: 24px; }
+    .switch { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-family: 'Segoe UI', Arial, sans-serif; }
+    th { background: #f5f5f5; font-weight: 600; }
+    tr:nth-child(even) { background: #fafafa; }
+    .lang-label { font-weight: bold; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Subject Line Localization Table</h1>
+    <div>Upon choosing language, all of the subject lines are shown below.</div>
+  </header>
+  <main>
+    <div class="controls">
+      <label for="language">Language:</label>
+      <select id="language"></select>
+    </div>
+    <div class="switch">
+      <input type="checkbox" id="showEnglish" checked />
+      <label for="showEnglish">Show English reference</label>
+    </div>
+    <div class="lang-label" id="langLabel"></div>
+    <table id="subjectTable">
+      <thead>
+        <tr>
+          <th id="enHeader">English Subject Line</th>
+          <th>Localized Subject Line</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </main>
+  <script>
+    /* ===== Embedded data (verbatim from your Excel Sheet1) ===== */
+    const DATA = {
+      "EN-US": {
+        "Registration confirmation": "Microsoft Event Registration Confirmation",
+        "Waitlist confirmation": "Microsoft Event Registration Pending",
+        "Waitlist denied": "Microsoft Event Registration Status Update",
+        "Event update reschedule": "Microsoft Event Change Notice to Registered Customers",
+        "Event Cancellation": "Microsoft Event Cancellation Notice to Registered Customers",
+        "Event reminder": "Microsoft Event Reminder",
+        "Thank you for attending": "Thank You For Attending",
+        "Sorry we missed you": "We’re Sorry We Missed You",
+        "Registration Pending": "Microsoft Event Registration Pending",
+        "Apology Pre-resolution/Event Agenda Update Email": "Sorry, we experienced an issue with your event",
+        "Microsoft Event On-Demand Registration Confirmation": "Microsoft Event On-Demand Registration Confirmation"
+      },
+      "AR-SA": {
+        "Registration confirmation": "تأكيد تسـجيل الأحداث من Microsoft",
+        "Waitlist confirmation": "تسـجيل الأحداث من Microsoft معلّق",
+        "Waitlist denied": "تحديث حالة تسـجيل الأحداث من Microsoft",
+        "Event update reschedule": "إشعار تغيير الأحداث من Microsoft للعملاء المسـجّلين",
+        "Event Cancellation": "إشعار إلغاء حدث Microsoft للعملاء المسـجّلين",
+        "Event reminder": "التذكير بأحداث Microsoft",
+        "Thank you for attending": "أشكر لكم حضوركم",
+        "Sorry we missed you": "نأسف على عدم حضورك",
+        "Registration Pending": "تسـجيل الأحداث من Microsoft معلّق",
+        "Apology Pre-resolution/Event Agenda Update Email": "عذرًا، واجهنا مشكلة في الحدث الخاص بك",
+        "Microsoft Event On-Demand Registration Confirmation": "تأكيد تسجيل الأحداث حسب الطلب من Microsoft"
+      },
+      "CS-CZ": {
+        "Registration confirmation": "Potvrzení registrace na akci společnosti Microsoft",
+        "Waitlist confirmation": "Probíhá registrace na akci společnosti Microsoft",
+        "Waitlist denied": "Aktualizace stavu registrace na akci společnosti Microsoft",
+        "Event update reschedule": "Oznámení o změně akce společnosti Microsoft pro registrované zákazníky",
+        "Event Cancellation": "Oznámení o zrušení akce společnosti Microsoft pro registrované zákazníky",
+        "Event reminder": "Připomenutí akce společnosti Microsoft",
+        "Thank you for attending": "Děkujeme za vaši účast",
+        "Sorry we missed you": "Je nám líto, že vám to nevyšlo",
+        "Registration Pending": "Probíhá registrace na akci společnosti Microsoft",
+        "Apology Pre-resolution/Event Agenda Update Email": "Je nám líto, ale došlo k problému s vaší akcí",
+        "Microsoft Event On-Demand Registration Confirmation": "Potvrzení registrace na akci Microsoftu na vyžádání"
+      },
+      "DA-DK": {
+        "Registration confirmation": "Bekræftelse af tilmelding til Microsoft-begivenhed",
+        "Waitlist confirmation": "Afventer bekræftelse af tilmelding til Microsoft-begivenhed",
+        "Waitlist denied": "Statusopdatering for tilmelding til Microsoft-begivenhed",
+        "Event update reschedule": "Meddelelse til tilmeldte kunder om ændring af Microsoft-begivenhed",
+        "Event Cancellation": "Meddelelse til tilmeldte kunder om annullering af Microsoft-begivenhed",
+        "Event reminder": "Påmindelse om Microsoft-begivenhed",
+        "Thank you for attending": "Tak, fordi du var med",
+        "Sorry we missed you": "Vi er kede af, at du ikke deltog",
+        "Registration Pending": "Afventer bekræftelse af tilmelding til Microsoft-begivenhed",
+        "Apology Pre-resolution/Event Agenda Update Email": "Vi har desværre oplevet et problem med dit event",
+        "Microsoft Event On-Demand Registration Confirmation": "Bekræftelse af tilmelding til Microsoft-event on-demand"
+      },
+      "DE-DE": {
+        "Registration confirmation": "Bestätigung für die Anmeldung zu einer Microsoft-Veranstaltung",
+        "Waitlist confirmation": "Ihre Anmeldung zur Microsoft-Veranstaltung steht aus",
+        "Waitlist denied": "Status Ihrer Registrierung zur Microsoft-Veranstaltung",
+        "Event update reschedule": "Änderungshinweis zur Microsoft-Veranstaltung für angemeldete Kund*innen",
+        "Event Cancellation": "Stornierungshinweis für eine Microsoft-Veranstaltung für angemeldete Kund*innen",
+        "Event reminder": "Erinnerung zur Microsoft-Veranstaltung",
+        "Thank you for attending": "Vielen Dank für Ihre Teilnahme!",
+        "Sorry we missed you": "Wir haben Sie vermisst!",
+        "Registration Pending": "Ihre Anmeldung zur Microsoft-Veranstaltung steht aus",
+        "Apology Pre-resolution/Event Agenda Update Email": "Es tut uns leid, wir haben ein Problem mit Ihrer Veranstaltung festgestellt",
+        "Microsoft Event On-Demand Registration Confirmation": "Anmeldebestätigung für die Microsoft-Veranstaltung"
+      },
+      "EL-GR": {
+        "Registration confirmation": "Επιβεβαίωση εγγραφής σε συμβάν της Microsoft",
+        "Waitlist confirmation": "Εκκρεμής εγγραφή σε συμβάν της Microsoft",
+        "Waitlist denied": "Ενημέρωση κατάστασης εγγραφής για συμβάν της Microsoft",
+        "Event update reschedule": "Ειδοποίηση προς εγγεγραμμένους πελάτες για την αλλαγή συμβάντος της Microsoft",
+        "Event Cancellation": "Ειδοποίηση προς εγγεγραμμένους πελάτες για την ακύρωση συμβάντος της Microsoft",
+        "Event reminder": "Υπενθύμιση για συμβάν της Microsoft",
+        "Thank you for attending": "Σας ευχαριστούμε που παραβρεθήκατε",
+        "Sorry we missed you": "Λυπούμαστε που δεν συμμετείχατε",
+        "Registration Pending": "Εκκρεμής εγγραφή σε συμβάν της Microsoft",
+        "Apology Pre-resolution/Event Agenda Update Email": "Λυπούμαστε, αντιμετωπίσαμε κάποιο πρόβλημα με την εκδήλωσή σας",
+        "Microsoft Event On-Demand Registration Confirmation": "Επιβεβαίωση εγγραφής για συμβάν της Microsoft κατ' απαίτηση"
+      },
+      "EN-GB": {
+        "Registration confirmation": "Microsoft Event Registration Confirmation",
+        "Waitlist confirmation": "Microsoft Event Registration Pending",
+        "Waitlist denied": "Microsoft Event Registration Status Update",
+        "Event update reschedule": "Microsoft Event Change Notice to Registered Customers",
+        "Event Cancellation": "Microsoft Event Cancellation Notice to Registered Customers",
+        "Event reminder": "Microsoft Event Reminder",
+        "Thank you for attending": "Thank You For Attending",
+        "Sorry we missed you": "We’re Sorry We Missed You",
+        "Registration Pending": "Microsoft Event Registration Pending",
+        "Apology Pre-resolution/Event Agenda Update Email": "Sorry, we experienced an issue with your event",
+        "Microsoft Event On-Demand Registration Confirmation": "Microsoft Event On-Demand Registration Confirmation"
+      },
+      "ES-ES": {
+        "Registration confirmation": "Confirmación de registro en el evento de Microsoft",
+        "Waitlist confirmation": "Registro pendiente en el evento de Microsoft",
+        "Waitlist denied": "Actualización del estado del evento de Microsoft",
+        "Event update reschedule": "Aviso de cambio del evento de Microsoft para los clientes registrados",
+        "Event Cancellation": "Aviso de cancelación del evento de Microsoft para los clientes registrados",
+        "Event reminder": "Recordatorio del evento de Microsoft",
+        "Thank you for attending": "Gracias por tu asistencia",
+        "Sorry we missed you": "Lamentamos que te lo hayas perdido",
+        "Registration Pending": "Registro pendiente en el evento de Microsoft",
+        "Apology Pre-resolution/Event Agenda Update Email": "Lo sentimos, hemos tenido un problema con tu evento",
+        "Microsoft Event On-Demand Registration Confirmation": "Confirmación de registro en el evento a petición de Microsoft"
+      },
+      "ES-LA": {
+        "Registration confirmation": "Confirmación de registro en el evento de Microsoft",
+        "Waitlist confirmation": "Registro en el evento de Microsoft pendiente",
+        "Waitlist denied": "Actualización del estado del registro en el evento de Microsoft",
+        "Event update reschedule": "Aviso de cambio del evento de Microsoft para clientes registrados",
+        "Event Cancellation": "Aviso de cancelación del evento de Microsoft para clientes registrados",
+        "Event reminder": "Recordatorio del evento de Microsoft",
+        "Thank you for attending": "¡Gracias por asistir!",
+        "Sorry we missed you": "¡Lamentamos que no haya asistido!",
+        "Registration Pending": "Registro en el evento de Microsoft pendiente",
+        "Apology Pre-resolution/Event Agenda Update Email": "Lo sentimos, hemos experimentado un problema con su evento",
+        "Microsoft Event On-Demand Registration Confirmation": "Confirmación de registro en el evento de Microsoft on-demand"
+      },
+      "FI-FI": {
+        "Registration confirmation": "Microsoft-tapahtuman ilmoittautumisvahvistus",
+        "Waitlist confirmation": "Microsoftin tapahtuman ilmoittautuminen on vireillä",
+        "Waitlist denied": "Microsoftin tapahtuman ilmoittautumisen tilapäivitys",
+        "Event update reschedule": "Microsoft-tapahtuman muutosilmoitus ilmoittautuneille asiakkaille",
+        "Event Cancellation": "Microsoft-tapahtuman peruutusilmoitus ilmoittautuneille asiakkaille",
+        "Event reminder": "Muistutus Microsoftin tapahtumasta",
+        "Thank you for attending": "Kiitos osallistumisesta",
+        "Sorry we missed you": "Harmi, ettet päässyt osallistumaan",
+        "Registration Pending": "Microsoftin tapahtuman ilmoittautuminen on vireillä",
+        "Apology Pre-resolution/Event Agenda Update Email": "Tapahtumaan liittyen ilmeni valitettavasti ongelma",
+        "Microsoft Event On-Demand Registration Confirmation": "Tallennetun Microsoft-tapahtuman ilmoittautumisvahvistus"
+      },
+      "FR-CA": {
+        "Registration confirmation": "Confirmation d’inscription à l’événement Microsoft",
+        "Waitlist confirmation": "Inscription à l’événement Microsoft en attente",
+        "Waitlist denied": "Mise à jour de l’état de l’inscription à l’événement Microsoft",
+        "Event update reschedule": "Avis de modification d’événement Microsoft aux clients inscrits",
+        "Event Cancellation": "Avis d’annulation d’événement Microsoft aux clients inscrits",
+        "Event reminder": "Rappel d’événement Microsoft",
+        "Thank you for attending": "Merci de votre participation",
+        "Sorry we missed you": "Nous regrettons votre absence",
+        "Registration Pending": "Inscription à l’événement Microsoft en attente",
+        "Apology Pre-resolution/Event Agenda Update Email": "Désolés, un problème est survenu avec votre événement",
+        "Microsoft Event On-Demand Registration Confirmation": "Confirmation d’inscription à l’événement Microsoft sur demande"
+      },
+      "FR-FR": {
+        "Registration confirmation": "Confirmation de l’inscription à un événement Microsoft",
+        "Waitlist confirmation": "Inscription à un événement Microsoft en attente",
+        "Waitlist denied": "Mise à jour du statut de l’inscription à un événement Microsoft",
+        "Event update reschedule": "Avis de modification d’un événement Microsoft pour les clients inscrits",
+        "Event Cancellation": "Avis d’annulation d’un événement Microsoft pour les clients inscrits",
+        "Event reminder": "Rappel d’un événement Microsoft",
+        "Thank you for attending": "Nous vous remercions de votre participation !",
+        "Sorry we missed you": "Nous regrettons votre absence !",
+        "Registration Pending": "Inscription à un événement Microsoft en attente",
+        "Apology Pre-resolution/Event Agenda Update Email": "Désolé, nous avons rencontré un problème avec votre événement",
+        "Microsoft Event On-Demand Registration Confirmation": "Confirmation de l'inscription au webinar à la demande de Microsoft"
+      },
+      "HE-IL": {
+        "Registration confirmation": "אישור רישום לאירוע של Microsoft",
+        "Waitlist confirmation": "רישום לאירוע של Microsoft בהמתנה",
+        "Waitlist denied": "עדכון מצב הרישום לאירוע של Microsoft",
+        "Event update reschedule": " הודעה על שינוי אירוע של Microsoft עבור לקוחות שנרשמו",
+        "Event Cancellation": "הודעה על שינוי אירוע של Microsoft עבור לקוחות שנרשמו",
+        "Event reminder": " תזכורת לאירוע של Microsoft",
+        "Thank you for attending": " אנו מודים לך על השתתפותך",
+        "Sorry we missed you": " אנו מצטערים שלא הצלחת להגיע",
+        "Registration Pending": "רישום לאירוע של Microsoft בהמתנה",
+        "Apology Pre-resolution/Event Agenda Update Email": "מצטערים, נתקלנו בבעיה בהרשמה שלכם",
+        "Microsoft Event On-Demand Registration Confirmation": "אישור רישום לאירוע לפי דרישה של Microsoft"
+      },
+      "HR-HR": {
+        "Registration confirmation": "Potvrda registracije za Microsoftov događaj",
+        "Waitlist confirmation": "Registracije za Microsoftov događaj na čekanju",
+        "Waitlist denied": "Ažuriranje stanja registracije za Microsoftov događaj",
+        "Event update reschedule": "Obavijest registriranim korisnicima o promjeni Microsoftova događaja",
+        "Event Cancellation": "Obavijest registriranim korisnicima o otkazivanju Microsoftova događaja",
+        "Event reminder": "Podsjetnik na Microsoftov događaj",
+        "Thank you for attending": "Hvala vam što ste sudjelovali",
+        "Sorry we missed you": "Žao nam je, nedostajali ste nam",
+        "Registration Pending": "Registracije za Microsoftov događaj na čekanju",
+        "Apology Pre-resolution/Event Agenda Update Email": "Žao nam je, došlo je do problema s vašim događajem",
+        "Microsoft Event On-Demand Registration Confirmation": "Potvrda registracije za Microsoftov događaj na zahtjev"
+      },
+      "HU-HU": {
+        "Registration confirmation": "Microsoft-eseményre való regisztráció visszaigazolása",
+        "Waitlist confirmation": "Microsoft-eseményre való regisztráció függőben",
+        "Waitlist denied": "Microsoft-eseményre való regisztrációval kapcsolatos állapotfrissítés",
+        "Event update reschedule": "Értesítés Microsoft-eseményt érintő változásról regisztrált ügyfeleknek",
+        "Event Cancellation": " Értesítés Microsoft-esemény lemondásáról regisztrált ügyfeleknek",
+        "Event reminder": "Microsoft-eseménnyel kapcsolatos emlékeztető",
+        "Thank you for attending": "Köszönjük részvételét!",
+        "Sorry we missed you": "Sajnáljuk, hogy nem tudott részt venni az eseményen!",
+        "Registration Pending": "Microsoft-eseményre való regisztráció függőben",
+        "Apology Pre-resolution/Event Agenda Update Email": "Sajnálatos módon problémát tapasztaltunk az eseménnyel kapcsolatban",
+        "Microsoft Event On-Demand Registration Confirmation": "Felvételről elérhető Microsoft-eseményre való regisztráció visszaigazolása"
+      },
+      "ID-ID": {
+        "Registration confirmation": "Konfirmasi Pendaftaran Acara Microsoft",
+        "Waitlist confirmation": "Penundaan Pendaftaran Acara Microsoft",
+        "Waitlist denied": "Pembaruan Status Pendaftaran Acara Microsoft",
+        "Event update reschedule": "Pemberitahuan tentang Perubahan Acara Microsoft kepada Pelanggan Terdaftar",
+        "Event Cancellation": "Pemberitahuan Pembatalan Acara Microsoft kepada Pelanggan Terdaftar",
+        "Event reminder": "Pengingat Acara Microsoft",
+        "Thank you for attending": "Terima Kasih Telah Mengikuti Acara Ini",
+        "Sorry we missed you": "Maaf, Anda Telah Melewatkan Kesempatan Ini!",
+        "Registration Pending": "Penundaan Pendaftaran Acara Microsoft",
+        "Apology Pre-resolution/Event Agenda Update Email": "Maaf, kami mengalami masalah dengan acara Anda",
+        "Microsoft Event On-Demand Registration Confirmation": "Konfirmasi Pendaftaran Acara Microsoft Sesuai Permintaan"
+      },
+      "IT-IT": {
+        "Registration confirmation": "Conferma della registrazione all'evento Microsoft",
+        "Waitlist confirmation": "Registrazione in attesa per l'evento Microsoft",
+        "Waitlist denied": "Aggiornamento dello stato della registrazione all'evento Microsoft",
+        "Event update reschedule": "Avviso di modifica evento Microsoft ai clienti registrati",
+        "Event Cancellation": "Avviso di cancellazione dell'evento Microsoft ai clienti registrati",
+        "Event reminder": "Promemoria dell'evento Microsoft",
+        "Thank you for attending": "Grazie per la partecipazione!",
+        "Sorry we missed you": "Ci dispiace che tu abbia perso l'evento",
+        "Registration Pending": "Registrazione in attesa per l'evento Microsoft",
+        "Apology Pre-resolution/Event Agenda Update Email": "Purtroppo abbiamo riscontrato un problema con il tuo evento",
+        "Microsoft Event On-Demand Registration Confirmation": "Conferma della registrazione all'evento Microsoft on-demand"
+      },
+      "JA-JP": {
+        "Registration confirmation": "マイクロソフトのイベントへの登録のご確認",
+        "Waitlist confirmation": "マイクロソフトのイベントへの登録の保留",
+        "Waitlist denied": "登録ステータスの更新- マイクロソフト イベント",
+        "Event update reschedule": "マイクロソフトのイベントに登録されたお客様へ変更のお知らせ",
+        "Event Cancellation": "マイクロソフトのイベントに登録されたお客様へキャンセルのお知らせ",
+        "Event reminder": "マイクロソフト イベントのリマインダー",
+        "Thank you for attending": "ご参加いただき、ありがとうございます",
+        "Sorry we missed you": "ご参加いただけず残念でした",
+        "Registration Pending": "マイクロソフトのイベントへの登録の保留",
+        "Apology Pre-resolution/Event Agenda Update Email": "申し訳ございません。お客様のイベントで問題が発生しました",
+        "Microsoft Event On-Demand Registration Confirmation": "マイクロソフトのオンデマンド イベントへの登録のご確認"
+      },
+      "KO-KR": {
+        "Registration confirmation": "Microsoft 이벤트 등록 완료 안내",
+        "Waitlist confirmation": "Microsoft 이벤트 등록 보류",
+        "Waitlist denied": "Microsoft 이벤트 등록 상태 변경 안내",
+        "Event update reschedule": "등록된 고객에게 Microsoft 이벤트 변경 안내",
+        "Event Cancellation": "등록된 고객에게 Microsoft 이벤트 취소 안내",
+        "Event reminder": "Microsoft 이벤트 미리 알림",
+        "Thank you for attending": "참석해 주셔서 감사합니다",
+        "Sorry we missed you": "뵙지 못해 아쉽습니다.",
+        "Registration Pending": "Microsoft 이벤트 등록 보류",
+        "Apology Pre-resolution/Event Agenda Update Email": "죄송합니다. 이벤트에 문제가 발생했습니다.",
+        "Microsoft Event On-Demand Registration Confirmation": "Microsoft 이벤트 온디맨드 등록 확인"
+      },
+      "LT-LT": {
+        "Registration confirmation": "Registracijos į „Microsoft“ įvykį patvirtinimas",
+        "Waitlist confirmation": "Registracija į „Microsoft“ įvykį laukia patvirtinimo",
+        "Waitlist denied": "Registracijos į „Microsoft“ įvykį būsenos atnaujinimas",
+        "Event update reschedule": "„Microsoft“ pranešimas apie įvykio pasikeitimą registruotiems klientams",
+        "Event Cancellation": "„Microsoft“ pranešimas apie įvykio atšaukimą registruotiems klientams",
+        "Event reminder": "Priminimas apie „Microsoft“ įvykį",
+        "Thank you for attending": "Dėkojame, kad dalyvavote",
+        "Sorry we missed you": "Apgailestaujame, kad negalėjote dalyvauti",
+        "Registration Pending": "Registracija į „Microsoft“ įvykį laukia patvirtinimo",
+        "Apology Pre-resolution/Event Agenda Update Email": "Atsiprašome, susiduriame su techninėmis problemomis dėl jūsų renginio",
+        "Microsoft Event On-Demand Registration Confirmation": "Registracijos į „Microsoft“ užsakomąjį renginį patvirtinimas"
+      },
+      "NB-NO": {
+        "Registration confirmation": "Bekreftelse for påmelding til Microsoft-arrangementet",
+        "Waitlist confirmation": "Påmeldingen din til Microsoft-arrangementet er satt på vent",
+        "Waitlist denied": "Statusoppdatering for påmeldingen din til Microsoft-arrangementet",
+        "Event update reschedule": "Varsel om endring av Microsoft-arrangement for påmeldte kunder",
+        "Event Cancellation": "Varsel om avlysning av Microsoft-arrangement for registrerte kunder",
+        "Event reminder": "Påminnelse om Microsoft-arrangement",
+        "Thank you for attending": "Takk for at du kom!",
+        "Sorry we missed you": "Trist at du ikke kom",
+        "Registration Pending": "Påmeldingen din til Microsoft-arrangementet er satt på vent",
+        "Apology Pre-resolution/Event Agenda Update Email": "Beklager, vi det har oppstått et problem med arrangementet",
+        "Microsoft Event On-Demand Registration Confirmation": "Bekreftelse av påmelding til Microsoft-arrangementet"
+      },
+      "NL-NL": {
+        "Registration confirmation": "Microsoft-evenement: aanmeldingsbevestiging",
+        "Waitlist confirmation": "Microsoft-evenement: aanmelding in afwachting",
+        "Waitlist denied": "Microsoft-evenement: update status aanmelding",
+        "Event update reschedule": "Microsoft-evenement: wijzigingsbericht voor aangemelde klanten",
+        "Event Cancellation": "Microsoft-evenement: annuleringsbericht voor aangemelde klanten",
+        "Event reminder": "Herinnering voor je Microsoft-evenement",
+        "Thank you for attending": "Bedankt voor je deelname",
+        "Sorry we missed you": "Jammer dat je er niet bij kon zijn",
+        "Registration Pending": "Microsoft-evenement: aanmelding in afwachting",
+        "Apology Pre-resolution/Event Agenda Update Email": "Sorry, er is een probleem met je evenement opgetreden",
+        "Microsoft Event On-Demand Registration Confirmation": "Bevestiging van registratie voor on-demand Microsoft-evenement"
+      },
+      "PL-PL": {
+        "Registration confirmation": "Potwierdzenie rejestracji na wydarzenie Microsoft",
+        "Waitlist confirmation": "Rejestracja na wydarzenie Microsoft oczekuje",
+        "Waitlist denied": "Aktualizacja stanu rejestracji na wydarzenie Microsoft",
+        "Event update reschedule": "Powiadomienie o zmianie dotyczącej wydarzenia Microsoft dla zarejestrowanych klientów",
+        "Event Cancellation": "Powiadomienie o anulowaniu wydarzenia Microsoft dla zarejestrowanych klientów",
+        "Event reminder": "Przypomnienie o wydarzeniu Microsoft",
+        "Thank you for attending": "Dziękujemy za udział",
+        "Sorry we missed you": "Przykro nam, że nie było Cię z nami",
+        "Registration Pending": "Rejestracja na wydarzenie Microsoft oczekuje",
+        "Apology Pre-resolution/Event Agenda Update Email": "Przepraszamy, wystąpił problem z Twoim wydarzeniem",
+        "Microsoft Event On-Demand Registration Confirmation": "Potwierdzenie rejestracji na wydarzenie Microsoft na żądanie"
+      },
+      "PT-BR": {
+        "Registration confirmation": "Confirmação da inscrição no evento da Microsoft",
+        "Waitlist confirmation": "Inscrição no evento da Microsoft pendente",
+        "Waitlist denied": "Atualização do status da inscrição no evento da Microsoft",
+        "Event update reschedule": "Aviso de alteração aos clientes inscritos no evento da Microsoft",
+        "Event Cancellation": "Aviso de cancelamento aos clientes inscritos no evento da Microsoft",
+        "Event reminder": "Lembrete do evento da Microsoft",
+        "Thank you for attending": "Agradecemos sua participação",
+        "Sorry we missed you": "Sentimos sua falta",
+        "Registration Pending": "Inscrição no evento da Microsoft pendente",
+        "Apology Pre-resolution/Event Agenda Update Email": "Desculpe, tivemos um problema com o seu evento.",
+        "Microsoft Event On-Demand Registration Confirmation": "Confirmação de registro do evento da Microsoft"
+      },
+      "PT-PT": {
+        "Registration confirmation": "Confirmação de Registo no Evento da Microsoft",
+        "Waitlist confirmation": "Registo no Evento da Microsoft Pendente",
+        "Waitlist denied": "Atualização do Estado do Registo no Evento da Microsoft",
+        "Event update reschedule": "Aviso de Alteração de Evento da Microsoft aos Clientes Registados",
+        "Event Cancellation": "Aviso de Cancelamento do Evento da Microsoft aos Clientes Registados",
+        "Event reminder": "Lembrete de Evento da Microsoft",
+        "Thank you for attending": "Obrigado por Participar",
+        "Sorry we missed you": "Lamentamos que Não Tenha Podido Participar",
+        "Registration Pending": "Registo no Evento da Microsoft Pendente",
+        "Apology Pre-resolution/Event Agenda Update Email": "Desculpe, tivemos um problema com o seu evento",
+        "Microsoft Event On-Demand Registration Confirmation": "Confirmação de Registo no Evento On-Demand da Microsoft"
+      },
+      "RO-RO": {
+        "Registration confirmation": "Confirmare înregistrare la un eveniment Microsoft",
+        "Waitlist confirmation": "Înregistrare la evenimentul Microsoft în așteptare",
+        "Waitlist denied": "Actualizare stare înregistrare la evenimentul Microsoft",
+        "Event update reschedule": "Notificare de modificare eveniment Microsoft pentru clienții înregistrați",
+        "Event Cancellation": "Notificare de anulare eveniment Microsoft pentru clienții înregistrați",
+        "Event reminder": "Memento eveniment Microsoft",
+        "Thank you for attending": "Vă mulțumim pentru participare",
+        "Sorry we missed you": "Ne pare rău că nu ne-am văzut.",
+        "Registration Pending": "Înregistrare la evenimentul Microsoft în așteptare",
+        "Apology Pre-resolution/Event Agenda Update Email": "Ne pare rău, am întâmpinat o problemă cu evenimentul dvs.",
+        "Microsoft Event On-Demand Registration Confirmation": "Confirmare înregistrare la cerere la evenimentul Microsoft"
+      },
+      "RU-RU": {
+        "Registration confirmation": "Подтверждение регистрации на мероприятие Microsoft",
+        "Waitlist confirmation": "Ожидание регистрации на мероприятие Microsoft",
+        "Waitlist denied": "Обновление состояния регистрации на мероприятие Microsoft",
+        "Event update reschedule": "Уведомление для зарегистрированных клиентов об изменении мероприятия Microsoft",
+        "Event Cancellation": "Уведомление для зарегистрированных клиентов об отмене мероприятия Microsoft",
+        "Event reminder": "Напоминание о мероприятии Microsoft",
+        "Thank you for attending": "Благодарим за участие!",
+        "Sorry we missed you": "Нам жаль, что Вы пропустили мероприятие",
+        "Registration Pending": "Ожидание регистрации на мероприятие Microsoft",
+        "Apology Pre-resolution/Event Agenda Update Email": "Извините, с вашим мероприятием возникла проблема",
+        "Microsoft Event On-Demand Registration Confirmation": "Подтверждение регистрации для участия в мероприятии Microsoft по запросу"
+      },
+      "SK-SK": {
+        "Registration confirmation": "Potvrdenie registrácie na udalosť Microsoftu",
+        "Waitlist confirmation": "Registrácia na udalosť Microsoftu sa spracúva",
+        "Waitlist denied": "Aktualizácia stavu registrácie na udalosť Microsoftu",
+        "Event update reschedule": "Oznámenie o zmene udalosti Microsoftu registrovaným zákazníkom",
+        "Event Cancellation": "Oznámenie o zrušení udalosti Microsoftu registrovaným zákazníkom",
+        "Event reminder": "Pripomenutie udalosti Microsoftu",
+        "Thank you for attending": "Ďakujeme za účasť",
+        "Sorry we missed you": "Mrzí nás to. Chýbali ste nám.",
+        "Registration Pending": "Registrácia na udalosť Microsoftu sa spracúva",
+        "Apology Pre-resolution/Event Agenda Update Email": "Ľutujeme, vyskytol sa nejaký problém s podujatím, ktorého sa plánujete zúčastniť",
+        "Microsoft Event On-Demand Registration Confirmation": "Potvrdenie registrácie na udalosť Microsoftu na požiadanie"
+      },
+      "SL-SI": {
+        "Registration confirmation": "Potrditev registracije za dogodek družbe Microsoft",
+        "Waitlist confirmation": "Registracija za dogodek družbe Microsoft je v teku",
+        "Waitlist denied": "Posodobitev stanja registracije za dogodek družbe Microsoft",
+        "Event update reschedule": "Obvestilo o spremembi glede dogodka družbe Microsoft za registrirane stranke",
+        "Event Cancellation": "Obvestilo o preklicu dogodka družbe Microsoft za registrirane stranke",
+        "Event reminder": "Opomnik za dogodek družbe Microsoft",
+        "Thank you for attending": "Hvala za udeležbo",
+        "Sorry we missed you": "Žal nam je, da se niste mogli udeležiti dogodka",
+        "Registration Pending": "Registracija za dogodek družbe Microsoft je v teku",
+        "Apology Pre-resolution/Event Agenda Update Email": "Žal je prišlo do težave z dogodkom",
+        "Microsoft Event On-Demand Registration Confirmation": "Potrditev registracije za dogodek družbe Microsoft na zahtevo"
+      },
+      "SV-SE": {
+        "Registration confirmation": "Bekräftelse på anmälan till Microsoft-event",
+        "Waitlist confirmation": "Anmälan till Microsoft-eventet behandlas",
+        "Waitlist denied": "Statusuppdatering för anmälan till Microsoft-event",
+        "Event update reschedule": "Meddelande om ett ändrat Microsoft-event till anmälda kunder",
+        "Event Cancellation": "Meddelande till anmälda kunder om ett inställt Microsoft-event",
+        "Event reminder": "Påminnelse om Microsoft-event",
+        "Thank you for attending": "Tack för att du deltog",
+        "Sorry we missed you": "Det var synd att du inte kunde delta",
+        "Registration Pending": "Anmälan till Microsoft-eventet behandlas",
+        "Apology Pre-resolution/Event Agenda Update Email": "Det har tyvärr uppstått ett problem med ditt event",
+        "Microsoft Event On-Demand Registration Confirmation": "Bekräftelse på anmälan till Microsofts on-demand-event"
+      },
+      "TH-TH": {
+        "Registration confirmation": "การยืนยันการลงทะเบียนกิจกรรมของ Microsoft",
+        "Waitlist confirmation": "การลงทะเบียนกิจกรรมของ Microsoft อยู่ระหว่างการดำเนินการ",
+        "Waitlist denied": "การอัปเดตสถานะการลงทะเบียนกิจกรรมของ Microsoft",
+        "Event update reschedule": "ประกาศแจ้งเตือนการเปลี่ยนแปลงกิจกรรมของ Microsoft ไปยังลูกค้าที่ลงทะเบียน",
+        "Event Cancellation": "ประกาศแจ้งการยกเลิกกิจกรรมของ Microsoft ไปยังลูกค้าที่ลงทะเบียน",
+        "Event reminder": "การแจ้งเตือนกิจกรรมของ Microsoft",
+        "Thank you for attending": "ขอบคุณที่เข้าร่วม",
+        "Sorry we missed you": "เราเสียใจที่คุณไม่ได้เข้าร่วม",
+        "Registration Pending": "การลงทะเบียนกิจกรรมของ Microsoft อยู่ระหว่างการดำเนินการ",
+        "Apology Pre-resolution/Event Agenda Update Email": "ขออภัย เราประสบปัญหาเกี่ยวกับกิจกรรมของคุณ",
+        "Microsoft Event On-Demand Registration Confirmation": "การยืนยันการลงทะเบียนกิจกรรมของ Microsoft ตามความต้องการ"
+      },
+      "TR-TR": {
+        "Registration confirmation": "Microsoft Etkinlik Kaydı Onayı",
+        "Waitlist confirmation": "Microsoft Etkinlik Kaydı Onayı Beklemede",
+        "Waitlist denied": "Microsoft Olay Kaydı Durum Güncellemesi",
+        "Event update reschedule": "Kayıtlı Müşteriler İçin Microsoft Etkinlik Değişikliği Bildirimi",
+        "Event Cancellation": "Kayıtlı Müşteriler İçin Microsoft Etkinlik İptali Bildirimi",
+        "Event reminder": "Microsoft Etkinlik Hatırlatıcısı",
+        "Thank you for attending": "Katıldığınız için teşekkürler.",
+        "Sorry we missed you": "Sizinle Olamadığımız İçin Üzgünüz",
+        "Registration Pending": "Microsoft Etkinlik Kaydı Onayı Beklemede",
+        "Apology Pre-resolution/Event Agenda Update Email": "Üzgünüz, etkinliğinizle ilgili bir sorun yaşadık",
+        "Microsoft Event On-Demand Registration Confirmation": "İsteğe Bağlı Microsoft Etkinlik Kaydı Onayı"
+      },
+      "UK-UA": {
+        "Registration confirmation": "Підтвердження реєстрації для участі в заході корпорації Майкрософт",
+        "Waitlist confirmation": "Очікується підтвердження реєстрації для участі в заході корпорації Майкрософт",
+        "Waitlist denied": "Оновлення стану реєстрації для участі в заході корпорації Майкрософт",
+        "Event update reschedule": "Повідомлення зареєстрованим клієнтам про зміну місця або часу проведення заходу корпорації Майкрософт",
+        "Event Cancellation": "Повідомлення зареєстрованим клієнтам про скасування заходу корпорації Майкрософт",
+        "Event reminder": "Нагадування про захід корпорації Майкрософт",
+        "Thank you for attending": "Дякуємо за участь",
+        "Sorry we missed you": "Шкода, що Вас не було",
+        "Registration Pending": "Очікується підтвердження реєстрації для участі в заході корпорації Майкрософт",
+        "Apology Pre-resolution/Event Agenda Update Email": "Вибачте, у нас виникла проблема з вашою участю в заході",
+        "Microsoft Event On-Demand Registration Confirmation": "Підтвердження реєстрації за запитом для участі в заході корпорації Майкрософт"
+      },
+      "VI-VN": {
+        "Registration confirmation": "Xác nhận thông tin đăng ký sự kiện Microsoft",
+        "Waitlist confirmation": "Thông tin đăng ký sự kiện Microsoft đang chờ xử lý",
+        "Waitlist denied": "Cập nhật trạng thái đăng ký sự kiện Microsoft",
+        "Event update reschedule": "Thông báo thay đổi sự kiện của Microsoft cho Khách hàng đã đăng ký",
+        "Event Cancellation": "Thông báo hủy sự kiện của Microsoft cho Khách hàng đã đăng ký",
+        "Event reminder": "Lời nhắc về sự kiện Microsoft",
+        "Thank you for attending": "Cảm ơn bạn đã tham dự",
+        "Sorry we missed you": "Chúng tôi rất tiếc vì đã bỏ lỡ bạn",
+        "Registration Pending": "Thông tin đăng ký sự kiện Microsoft đang chờ xử lý",
+        "Apology Pre-resolution/Event Agenda Update Email": "Xin lỗi, chúng tôi đã gặp sự cố với sự kiện của bạn",
+        "Microsoft Event On-Demand Registration Confirmation": "Xác nhận Đăng ký Sự kiện Microsoft Theo Yêu cầu"
+      },
+      "ZH-CN": {
+        "Registration confirmation": "Microsoft 活动注册确认",
+        "Waitlist confirmation": "Microsoft 活动注册待确认",
+        "Waitlist denied": "Microsoft 活动注册状态更新",
+        "Event update reschedule": "Microsoft 针对注册客户的活动更改通知",
+        "Event Cancellation": "Microsoft 针对注册客户的活动取消通知",
+        "Event reminder": "Microsoft 活动提醒",
+        "Thank you for attending": "感谢参加",
+        "Sorry we missed you": "很遗憾你未能参加活动",
+        "Registration Pending": "Microsoft 活动注册待确认",
+        "Apology Pre-resolution/Event Agenda Update Email": "抱歉，你注册的活动出现了一点问题",
+        "Microsoft Event On-Demand Registration Confirmation": "Microsoft 活动点播内容注册确认"
+      },
+      "ZH-HK": {
+        "Registration confirmation": "Microsoft 活動登記確認",
+        "Waitlist confirmation": "Microsoft 活動登記待確認",
+        "Waitlist denied": "Microsoft 活動登記狀態更新",
+        "Event update reschedule": "給已登記客戶的 Microsoft 活動變更通知",
+        "Event Cancellation": "給已登記客戶的 Microsoft 活動取消通知",
+        "Event reminder": "Microsoft 活動提醒",
+        "Thank you for attending": "感謝您的出席",
+        "Sorry we missed you": "很遺憾您錯過這次研討會",
+        "Registration Pending": "Microsoft 活動登記待確認",
+        "Apology Pre-resolution/Event Agenda Update Email": "很抱歉，您的活動遇到問題",
+        "Microsoft Event On-Demand Registration Confirmation": "Microsoft 活動隨選點播登記確認"
+      },
+      "ZH-TW": {
+        "Registration confirmation": "Microsoft 活動登記確認",
+        "Waitlist confirmation": "Microsoft 活動登記待確認",
+        "Waitlist denied": "Microsoft 活動登記狀態更新",
+        "Event update reschedule": "給已登記客戶的 Microsoft 活動變更通知",
+        "Event Cancellation": "給已登記客戶的 Microsoft 活動取消通知",
+        "Event reminder": "Microsoft 活動提醒",
+        "Thank you for attending": "感謝您的出席",
+        "Sorry we missed you": "很遺憾您錯過這次研討會",
+        "Registration Pending": "Microsoft 活動登記待確認",
+        "Apology Pre-resolution/Event Agenda Update Email": "很抱歉，您的活動遇到問題",
+        "Microsoft Event On-Demand Registration Confirmation": "Microsoft 活動隨選點播登記確認"
+      }
+    };
+ 
+    // Fill language dropdown
+    const langSel = document.getElementById('language');
+    Object.keys(DATA).forEach(lang => {
+      const opt = document.createElement('option');
+      opt.value = lang;
+      opt.textContent = lang;
+      langSel.appendChild(opt);
+    });
+    // Render table for selected language
+    function renderTable() {
+      const selectedLang = langSel.value;
+      document.getElementById('langLabel').textContent = `Language: ${selectedLang}`;
+      const enSubjects = DATA["EN-US"];
+      const locSubjects = DATA[selectedLang];
+      const tbody = document.getElementById('subjectTable').querySelector('tbody');
+      tbody.innerHTML = '';
+      Object.keys(enSubjects).forEach(key => {
+        const tr = document.createElement('tr');
+        const tdEn = document.createElement('td');
+        tdEn.textContent = enSubjects[key];
+        tdEn.className = "enCol";
+        const tdLoc = document.createElement('td');
+        tdLoc.textContent = locSubjects && locSubjects[key] ? locSubjects[key] : '';
+        tr.appendChild(tdEn);
+        tr.appendChild(tdLoc);
+        tbody.appendChild(tr);
+      });
+      // Show/hide English column
+      const showEnglish = document.getElementById('showEnglish').checked;
+      document.getElementById('enHeader').style.display = showEnglish ? '' : 'none';
+      Array.from(document.getElementsByClassName('enCol')).forEach(td => {
+        td.style.display = showEnglish ? '' : 'none';
+      });
+    }
+    langSel.addEventListener('change', renderTable);
+    document.getElementById('showEnglish').addEventListener('change', renderTable);
+    langSel.value = "EN-US";
+    renderTable();
+  </script>
+</body>
+</html>
