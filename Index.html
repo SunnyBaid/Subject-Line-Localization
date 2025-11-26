@@ -5,17 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Subject Line Localization Table</title>
   <style>
+    /* Global Styles */
     body { font-family: 'Segoe UI', Arial, sans-serif; background: #fff; color: #000; margin: 0; }
     header { padding: 24px; border-bottom: 1px solid #ccc; background: #fff; }
     h1 { margin: 0 0 8px; font-size: 20px; }
     main { max-width: 800px; margin: 32px auto; padding: 0 24px; }
     .controls { margin-bottom: 24px; }
     .switch { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+    
+    /* Table Styles */
     table { width: 100%; border-collapse: collapse; margin-top: 12px; }
     th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-family: 'Segoe UI', Arial, sans-serif; }
     th { background: #f5f5f5; font-weight: 600; }
     tr:nth-child(even) { background: #fafafa; }
     .lang-label { font-weight: bold; margin-top: 12px; }
+ 
+    /* Custom Class for English Column - FIX: This CSS rule controls visibility */
+    .en-column { /* Use this class on TH and TD for the English column */ }
+ 
+    /* CSS to hide the English column when the table has the 'hide-english' class */
+    .hide-english .en-column {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -36,7 +47,7 @@
     <table id="subjectTable">
       <thead>
         <tr>
-          <th id="enHeader">English Subject Line</th>
+          <th id="enHeader" class="en-column">English Subject Line</th>
           <th>Localized Subject Line</th>
         </tr>
       </thead>
@@ -529,42 +540,58 @@
       }
     };
  
-    // Fill language dropdown
     const langSel = document.getElementById('language');
+    const subjectTable = document.getElementById('subjectTable');
+    const showEnglishCheckbox = document.getElementById('showEnglish');
+    const langLabel = document.getElementById('langLabel');
+ 
+    /* Fill language dropdown */
     Object.keys(DATA).forEach(lang => {
       const opt = document.createElement('option');
       opt.value = lang;
       opt.textContent = lang;
       langSel.appendChild(opt);
     });
-    // Render table for selected language
+ 
+    /* Render table for selected language */
     function renderTable() {
       const selectedLang = langSel.value;
-      document.getElementById('langLabel').textContent = `Language: ${selectedLang}`;
+      langLabel.textContent = `Language: ${selectedLang}`;
       const enSubjects = DATA["EN-US"];
       const locSubjects = DATA[selectedLang];
-      const tbody = document.getElementById('subjectTable').querySelector('tbody');
+      const tbody = subjectTable.querySelector('tbody');
       tbody.innerHTML = '';
+ 
       Object.keys(enSubjects).forEach(key => {
         const tr = document.createElement('tr');
         const tdEn = document.createElement('td');
+        
+        // FIX: Apply the visibility class to the TD element
         tdEn.textContent = enSubjects[key];
-        tdEn.className = "enCol";
+        tdEn.classList.add("en-column"); // Add the class to control visibility via CSS
+        
         const tdLoc = document.createElement('td');
-        tdLoc.textContent = locSubjects && locSubjects[key] ? locSubjects[key] : '';
+        // Use the original key for the localized text
+        tdLoc.textContent = locSubjects && locSubjects[key] ? locSubjects[key] : ''; 
+        
         tr.appendChild(tdEn);
         tr.appendChild(tdLoc);
         tbody.appendChild(tr);
       });
-      // Show/hide English column
-      const showEnglish = document.getElementById('showEnglish').checked;
-      document.getElementById('enHeader').style.display = showEnglish ? '' : 'none';
-      Array.from(document.getElementsByClassName('enCol')).forEach(td => {
-        td.style.display = showEnglish ? '' : 'none';
-      });
+      
+      // FIX: Toggle class on the table element to show/hide the English column
+      if (showEnglishCheckbox.checked) {
+        subjectTable.classList.remove('hide-english');
+      } else {
+        subjectTable.classList.add('hide-english');
+      }
     }
+ 
+    // Event listeners
     langSel.addEventListener('change', renderTable);
-    document.getElementById('showEnglish').addEventListener('change', renderTable);
+    showEnglishCheckbox.addEventListener('change', renderTable);
+ 
+    // Initial setup
     langSel.value = "EN-US";
     renderTable();
   </script>
