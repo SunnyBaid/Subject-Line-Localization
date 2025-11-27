@@ -5,28 +5,47 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Subject Line Localization Table</title>
   <style>
-    /* Global Styles */
     body { font-family: 'Segoe UI', Arial, sans-serif; background: #fff; color: #000; margin: 0; }
     header { padding: 24px; border-bottom: 1px solid #ccc; background: #fff; }
     h1 { margin: 0 0 8px; font-size: 20px; }
     main { max-width: 800px; margin: 32px auto; padding: 0 24px; }
-    .controls { margin-bottom: 24px; }
+    .controls { margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
     .switch { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
-    
-    /* Table Styles */
     table { width: 100%; border-collapse: collapse; margin-top: 12px; }
     th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-family: 'Segoe UI', Arial, sans-serif; }
     th { background: #f5f5f5; font-weight: 600; }
     tr:nth-child(even) { background: #fafafa; }
     .lang-label { font-weight: bold; margin-top: 12px; }
- 
-    /* Custom Class for English Column - FIX: This CSS rule controls visibility */
-    .en-column { /* Use this class on TH and TD for the English column */ }
- 
-    /* CSS to hide the English column when the table has the 'hide-english' class */
-    .hide-english .en-column {
-      display: none;
+
+    /* Buttons */
+    .copy-btn, .toggle-btn {
+      padding: 6px 10px;
+      font-size: 12px;
+      border: 1px solid #000;
+      background: #fff;
+      color: #000;
+      border-radius: 4px;
+      cursor: pointer;
     }
+    .copy-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .toggle-btn[aria-pressed="true"] { background: #000; color: #fff; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #000;
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease-in-out;
+    }
+    .toast.show { opacity: 0.9; }
   </style>
 </head>
 <body>
@@ -34,26 +53,44 @@
     <h1>Subject Line Localization Table</h1>
     <div>Upon choosing language, all of the subject lines are shown below.</div>
   </header>
+
   <main>
     <div class="controls">
       <label for="language">Language:</label>
       <select id="language"></select>
+
+      <!-- Include/Exclude On-Demand toggle -->
+      <button id="onDemandBtn" type="button" class="toggle-btn" aria-pressed="false"
+              title="Include/Exclude the On‑Demand Registration Confirmation row">
+        Include On‑Demand
+      </button>
+
+      <!-- Current view label -->
+      <span id="viewLabel" aria-live="polite"></span>
     </div>
+
     <div class="switch">
       <input type="checkbox" id="showEnglish" checked />
       <label for="showEnglish">Show English reference</label>
     </div>
+
     <div class="lang-label" id="langLabel"></div>
-    <table id="subjectTable">
+
+    <table id="subjectTable" aria-live="polite">
       <thead>
         <tr>
-          <th id="enHeader" class="en-column">English Subject Line</th>
+          <th id="enHeader">English Subject Line</th>
           <th>Localized Subject Line</th>
+          <th>Copy</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
   </main>
+
+  <!-- Toast -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
   <script>
     /* ===== Embedded data (verbatim from your Excel Sheet1) ===== */
     const DATA = {
@@ -236,7 +273,7 @@
         "Thank you for attending": "Hvala vam što ste sudjelovali",
         "Sorry we missed you": "Žao nam je, nedostajali ste nam",
         "Registration Pending": "Registracije za Microsoftov događaj na čekanju",
-        "Apology Pre-resolution/Event Agenda Update Email": "Žao nam je, došlo je do problema s vašim događajem",
+        "Apology Pre-resolution/Event Agenda Update Email": "Žao nam je, došlo je do problema с vašim događajem",
         "Microsoft Event On-Demand Registration Confirmation": "Potvrda registracije za Microsoftov događaj na zahtjev"
       },
       "HU-HU": {
@@ -320,7 +357,7 @@
       "NB-NO": {
         "Registration confirmation": "Bekreftelse for påmelding til Microsoft-arrangementet",
         "Waitlist confirmation": "Påmeldingen din til Microsoft-arrangementet er satt på vent",
-        "Waitlist denied": "Statusoppdatering for påmeldingen din til Microsoft-arrangementet",
+        "Waitlist denied": "Statusoppdatering for наmeldingen din til Microsoft-arrangementet",
         "Event update reschedule": "Varsel om endring av Microsoft-arrangement for påmeldte kunder",
         "Event Cancellation": "Varsel om avlysning av Microsoft-arrangement for registrerte kunder",
         "Event reminder": "Påminnelse om Microsoft-arrangement",
@@ -346,15 +383,15 @@
       "PL-PL": {
         "Registration confirmation": "Potwierdzenie rejestracji na wydarzenie Microsoft",
         "Waitlist confirmation": "Rejestracja na wydarzenie Microsoft oczekuje",
-        "Waitlist denied": "Aktualizacja stanu rejestracji na wydarzenie Microsoft",
+        "Waitlist denied": "Aktualizacja stanu rejestracji на wydarzenie Microsoft",
         "Event update reschedule": "Powiadomienie o zmianie dotyczącej wydarzenia Microsoft dla zarejestrowanych klientów",
-        "Event Cancellation": "Powiadomienie o anulowaniu wydarzenia Microsoft dla zarejestrowanych klientów",
-        "Event reminder": "Przypomnienie o wydarzeniu Microsoft",
-        "Thank you for attending": "Dziękujemy za udział",
-        "Sorry we missed you": "Przykro nam, że nie było Cię z nami",
-        "Registration Pending": "Rejestracja na wydarzenie Microsoft oczekuje",
+        "Event Cancellation": "Powiadomienie о anulowaniu wydarzenia Microsoft dla zarejestrowanych klientów",
+        "Event reminder": "Przypomnienie о wydarzeniu Microsoft",
+        "Thank you for attending": "Dziękujemy за udział",
+        "Sorry we missed you": "Przykro нам, że nie było Cię z nami",
+        "Registration Pending": "Rejestracja на wydarzenie Microsoft oczekuje",
         "Apology Pre-resolution/Event Agenda Update Email": "Przepraszamy, wystąpił problem z Twoim wydarzeniem",
-        "Microsoft Event On-Demand Registration Confirmation": "Potwierdzenie rejestracji na wydarzenie Microsoft na żądanie"
+        "Microsoft Event On-Demand Registration Confirmation": "Potwierdzenie rejestracji на wydarzenie Microsoft na żądanie"
       },
       "PT-BR": {
         "Registration confirmation": "Confirmação da inscrição no evento da Microsoft",
@@ -413,26 +450,26 @@
         "Waitlist confirmation": "Registrácia na udalosť Microsoftu sa spracúva",
         "Waitlist denied": "Aktualizácia stavu registrácie na udalosť Microsoftu",
         "Event update reschedule": "Oznámenie o zmene udalosti Microsoftu registrovaným zákazníkom",
-        "Event Cancellation": "Oznámenie o zrušení udalosti Microsoftu registrovaným zákazníkom",
+        "Event Cancellation": "Oznámenie о zrušení udalosti Microsoftu registrovaným zákazníkom",
         "Event reminder": "Pripomenutie udalosti Microsoftu",
         "Thank you for attending": "Ďakujeme za účasť",
-        "Sorry we missed you": "Mrzí nás to. Chýbali ste nám.",
+        "Sorry we missed you": "Mrzí nás то. Chýbali ste nám.",
         "Registration Pending": "Registrácia na udalosť Microsoftu sa spracúva",
-        "Apology Pre-resolution/Event Agenda Update Email": "Ľutujeme, vyskytol sa nejaký problém s podujatím, ktorého sa plánujete zúčastniť",
-        "Microsoft Event On-Demand Registration Confirmation": "Potvrdenie registrácie na udalosť Microsoftu na požiadanie"
+        "Apology Pre-resolution/Event Agenda Update Email": "Ľutujeme, vyskytol са nejaký problém с podujatím, ktorého sa plánujete zúčastniť",
+        "Microsoft Event On-Demand Registration Confirmation": "Potvrdenie registrácie на udalosť Microsoftu на požiadanie"
       },
       "SL-SI": {
         "Registration confirmation": "Potrditev registracije za dogodek družbe Microsoft",
         "Waitlist confirmation": "Registracija za dogodek družbe Microsoft je v teku",
-        "Waitlist denied": "Posodobitev stanja registracije za dogodek družbe Microsoft",
-        "Event update reschedule": "Obvestilo o spremembi glede dogodka družbe Microsoft za registrirane stranke",
-        "Event Cancellation": "Obvestilo o preklicu dogodka družbe Microsoft za registrirane stranke",
+        "Waitlist denied": "Posodobitev stanja registracije за dogodek družbe Microsoft",
+        "Event update reschedule": "Obvestilo о spremembi glede dogodka družbe Microsoft za registrirane stranke",
+        "Event Cancellation": "Obvestilo о preklicu dogodka družbe Microsoft za registrirane stranke",
         "Event reminder": "Opomnik za dogodek družbe Microsoft",
         "Thank you for attending": "Hvala za udeležbo",
-        "Sorry we missed you": "Žal nam je, da se niste mogli udeležiti dogodka",
-        "Registration Pending": "Registracija za dogodek družbe Microsoft je v teku",
-        "Apology Pre-resolution/Event Agenda Update Email": "Žal je prišlo do težave z dogodkom",
-        "Microsoft Event On-Demand Registration Confirmation": "Potrditev registracije za dogodek družbe Microsoft na zahtevo"
+        "Sorry we missed you": "Žal нам je, da se niste mogli udeležiti dogodka",
+        "Registration Pending": "Registracija за dogodek družbe Microsoft je v teku",
+        "Apology Pre-resolution/Event Agenda Update Email": "Žal je prišlo do težave з dogodkom",
+        "Microsoft Event On-Demand Registration Confirmation": "Potrditev registracije za dogodek družbe Microsoft на zahtevo"
       },
       "SV-SE": {
         "Registration confirmation": "Bekräftelse på anmälan till Microsoft-event",
@@ -539,60 +576,131 @@
         "Microsoft Event On-Demand Registration Confirmation": "Microsoft 活動隨選點播登記確認"
       }
     };
- 
-    const langSel = document.getElementById('language');
-    const subjectTable = document.getElementById('subjectTable');
-    const showEnglishCheckbox = document.getElementById('showEnglish');
-    const langLabel = document.getElementById('langLabel');
- 
+
+    /* Constants */
+    const ONDEMAND_KEY = "Microsoft Event On-Demand Registration Confirmation";
+
+    /* Toast helper */
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => toast.classList.remove('show'), 1200);
+    }
+
+    /* CodePen-safe copy helper (textarea + execCommand) */
+    function copyTextFallback(text) {
+      const clean = (text || '').toString().trim();
+      if (!clean) { showToast('Nothing to copy'); return; }
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = clean;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand('copy'); // works in most CodePen iframes
+        document.body.removeChild(ta);
+        showToast(ok ? 'Copied' : 'Copy failed');
+      } catch (err) {
+        console.error('Copy error:', err);
+        showToast('Copy failed');
+      }
+    }
+
     /* Fill language dropdown */
+    const langSel = document.getElementById('language');
     Object.keys(DATA).forEach(lang => {
       const opt = document.createElement('option');
       opt.value = lang;
       opt.textContent = lang;
       langSel.appendChild(opt);
     });
- 
-    /* Render table for selected language */
+
+    /* Toggle state: include On-Demand? (default OFF = excluded) */
+    let includeOnDemand = false;
+
+    /* Render table */
     function renderTable() {
-      const selectedLang = langSel.value;
-      langLabel.textContent = `Language: ${selectedLang}`;
-      const enSubjects = DATA["EN-US"];
+      const selectedLang = langSel.value || 'EN-US';
+      document.getElementById('langLabel').textContent = `Language: ${selectedLang}`;
+      document.getElementById('viewLabel').textContent = includeOnDemand
+        ? 'Including: On‑Demand row (last)'
+        : 'Excluding: On‑Demand row';
+
+      const enSubjects = DATA['EN-US'];
       const locSubjects = DATA[selectedLang];
-      const tbody = subjectTable.querySelector('tbody');
+      const tbody = document.getElementById('subjectTable').querySelector('tbody');
       tbody.innerHTML = '';
- 
-      Object.keys(enSubjects).forEach(key => {
+
+      // Compute ordered keys so On‑Demand is always last when included
+      const allKeys = Object.keys(enSubjects);
+      let keys;
+      if (includeOnDemand) {
+        keys = allKeys.filter(k => k !== ONDEMAND_KEY);
+        keys.push(ONDEMAND_KEY); // ensure it's last
+      } else {
+        keys = allKeys.filter(k => k !== ONDEMAND_KEY); // exclude it
+      }
+
+      // Build rows
+      keys.forEach(key => {
         const tr = document.createElement('tr');
+
+        // English column (toggleable)
         const tdEn = document.createElement('td');
-        
-        // FIX: Apply the visibility class to the TD element
-        tdEn.textContent = enSubjects[key];
-        tdEn.classList.add("en-column"); // Add the class to control visibility via CSS
-        
+        tdEn.textContent = enSubjects[key] || '';
+        tdEn.className = 'enCol';
+
+        // Localized column
         const tdLoc = document.createElement('td');
-        // Use the original key for the localized text
-        tdLoc.textContent = locSubjects && locSubjects[key] ? locSubjects[key] : ''; 
-        
+        const localizedText = (locSubjects && locSubjects[key]) ? locSubjects[key] : '';
+        tdLoc.textContent = localizedText;
+
+        // Copy column
+        const tdCopy = document.createElement('td');
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'copy-btn';
+        btn.textContent = 'Copy';
+        btn.setAttribute('aria-label', `Copy localized text for "${key}"`);
+        btn.disabled = !localizedText || !localizedText.toString().trim();
+        btn.addEventListener('click', () => copyTextFallback(localizedText));
+        tdCopy.appendChild(btn);
+
         tr.appendChild(tdEn);
         tr.appendChild(tdLoc);
+        tr.appendChild(tdCopy);
         tbody.appendChild(tr);
       });
-      
-      // FIX: Toggle class on the table element to show/hide the English column
-      if (showEnglishCheckbox.checked) {
-        subjectTable.classList.remove('hide-english');
-      } else {
-        subjectTable.classList.add('hide-english');
-      }
+
+      // Show/hide English column
+      const showEnglish = document.getElementById('showEnglish').checked;
+      document.getElementById('enHeader').style.display = showEnglish ? '' : 'none';
+      Array.from(document.getElementsByClassName('enCol')).forEach(td => {
+        td.style.display = showEnglish ? '' : 'none';
+      });
     }
- 
-    // Event listeners
+
+    /* Wire up controls */
     langSel.addEventListener('change', renderTable);
-    showEnglishCheckbox.addEventListener('change', renderTable);
- 
-    // Initial setup
-    langSel.value = "EN-US";
+    document.getElementById('showEnglish').addEventListener('change', renderTable);
+
+    const onDemandBtn = document.getElementById('onDemandBtn');
+    onDemandBtn.addEventListener('click', () => {
+      includeOnDemand = !includeOnDemand;
+      onDemandBtn.setAttribute('aria-pressed', String(includeOnDemand));
+      onDemandBtn.textContent = includeOnDemand ? 'Include On‑Demand (ON)' : 'Include On‑Demand';
+      renderTable();
+    });
+
+    /* Initial state */
+    langSel.value = 'EN-US';     // default language
+    includeOnDemand = false;     // default: exclude On‑Demand
+    onDemandBtn.setAttribute('aria-pressed', 'false');
     renderTable();
   </script>
 </body>
