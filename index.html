@@ -92,7 +92,7 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script>
-    /* ===== Embedded data (verbatim from your Excel Sheet1) ===== */
+    /* ===== Embedded data (Payment Pending removed) ===== */
     const DATA = {
       "EN-US": {
         "Registration confirmation": "Microsoft Event Registration Confirmation",
@@ -580,6 +580,21 @@
     /* Constants */
     const ONDEMAND_KEY = "Microsoft Event On-Demand Registration Confirmation";
 
+    /* Fixed display order (Payment Pending removed) */
+    const ORDER = [
+      "Registration confirmation",
+      "Waitlist confirmation",
+      "Waitlist denied",
+      "Event update reschedule",
+      "Event Cancellation",
+      "Event reminder",
+      "Thank you for attending",
+      "Sorry we missed you",
+      "Registration Pending",
+      "Apology Pre-resolution/Event Agenda Update Email",
+      "Microsoft Event On-Demand Registration Confirmation"
+    ];
+
     /* Toast helper */
     function showToast(message) {
       const toast = document.getElementById('toast');
@@ -602,7 +617,7 @@
         ta.style.left = '-9999px';
         document.body.appendChild(ta);
         ta.select();
-        const ok = document.execCommand('copy'); // works in most CodePen iframes
+        const ok = document.execCommand('copy');
         document.body.removeChild(ta);
         showToast(ok ? 'Copied' : 'Copy failed');
       } catch (err) {
@@ -623,7 +638,7 @@
     /* Toggle state: include On-Demand? (default OFF = excluded) */
     let includeOnDemand = false;
 
-    /* Render table */
+    /* Render table in the fixed ORDER */
     function renderTable() {
       const selectedLang = langSel.value || 'EN-US';
       document.getElementById('langLabel').textContent = `Language: ${selectedLang}`;
@@ -636,17 +651,9 @@
       const tbody = document.getElementById('subjectTable').querySelector('tbody');
       tbody.innerHTML = '';
 
-      // Compute ordered keys so On‑Demand is always last when included
-      const allKeys = Object.keys(enSubjects);
-      let keys;
-      if (includeOnDemand) {
-        keys = allKeys.filter(k => k !== ONDEMAND_KEY);
-        keys.push(ONDEMAND_KEY); // ensure it's last
-      } else {
-        keys = allKeys.filter(k => k !== ONDEMAND_KEY); // exclude it
-      }
+      // Build list of keys following ORDER, honoring On‑Demand toggle
+      const keys = ORDER.filter(k => includeOnDemand ? true : k !== ONDEMAND_KEY);
 
-      // Build rows
       keys.forEach(key => {
         const tr = document.createElement('tr');
 
@@ -657,7 +664,7 @@
 
         // Localized column
         const tdLoc = document.createElement('td');
-        const localizedText = (locSubjects && locSubjects[key]) ? locSubjects[key] : '';
+        const localizedText = (locSubjects && key in locSubjects) ? (locSubjects[key] || '') : '';
         tdLoc.textContent = localizedText;
 
         // Copy column
