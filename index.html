@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,20 +6,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Subject Line Localization Table</title>
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; background: #fff; color: #000; margin: 0; }
-    header { padding: 24px; border-bottom: 1px solid #ccc; background: #fff; }
+    /* Base layout */
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      transition: background 0.4s ease, color 0.4s ease;
+    }
+    header {
+      padding: 24px;
+      border-bottom: 1px solid #ccc;
+      transition: background 0.4s ease, color 0.4s ease;
+    }
     h1 { margin: 0 0 8px; font-size: 20px; }
     main { max-width: 800px; margin: 32px auto; padding: 0 24px; }
     .controls { margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
     .switch { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-family: 'Segoe UI', Arial, sans-serif; }
-    th { background: #f5f5f5; font-weight: 600; }
-    tr:nth-child(even) { background: #fafafa; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; transition: background 0.4s ease, color 0.4s ease; }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      transition: background 0.4s ease, color 0.4s ease;
+    }
+    th { font-weight: 600; }
+    tr:nth-child(even) { transition: background 0.4s ease; }
     .lang-label { font-weight: bold; margin-top: 12px; }
 
     /* Buttons */
-    .copy-btn, .toggle-btn {
+    .copy-btn, .toggle-btn, .theme-btn {
       padding: 6px 10px;
       font-size: 12px;
       border: 1px solid #000;
@@ -26,6 +44,7 @@
       color: #000;
       border-radius: 4px;
       cursor: pointer;
+      transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
     }
     .copy-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .toggle-btn[aria-pressed="true"] { background: #000; color: #fff; }
@@ -46,12 +65,54 @@
       transition: opacity 0.2s ease-in-out;
     }
     .toast.show { opacity: 0.9; }
+
+    /* Serial number column */
+    #snHeader, .snCol { text-align: center; width: 56px; }
+
+    /* Theme: Light (default) */
+    body.light { background: #fff; color: #000; }
+    body.light header { background: #fff; color: #000; }
+    body.light th { background: #f5f5f5; color: #000; }
+    body.light tr:nth-child(even) { background: #fafafa; }
+    body.light .copy-btn, body.light .toggle-btn, body.light .theme-btn { background: #fff; color: #000; border-color: #000; }
+
+    /* Theme: Dark */
+    body.dark { background: #121212; color: #f5f5f5; }
+    body.dark header { background: #1f1f1f; color: #f5f5f5; }
+    body.dark th { background: #1f1f1f; color: #f5f5f5; }
+    body.dark tr:nth-child(even) { background: #1a1a1a; }
+    body.dark .copy-btn, body.dark .toggle-btn, body.dark .theme-btn { background: #2c2c2c; color: #fff; border-color: #bbb; }
+    body.dark .toggle-btn[aria-pressed="true"] { background: #333; color: #fff; }
+
+    /* Theme: Blue (corporate) */
+    body.blue { background: #e6f0ff; color: #003366; }
+    body.blue header { background: #003366; color: #fff; }
+    body.blue th { background: #003366; color: #fff; }
+    body.blue tr:nth-child(even) { background: #f0f8ff; }
+    body.blue .copy-btn, body.blue .toggle-btn, body.blue .theme-btn { background: #fff; color: #003366; border-color: #003366; }
+    body.blue .toggle-btn[aria-pressed="true"] { background: #003366; color: #fff; border-color: #003366; }
+
+    /* Theme switch animation */
+    @keyframes rowFade {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes headerPulse {
+      from { opacity: 0.7; }
+      to   { opacity: 1; }
+    }
+    .theme-switch-anim thead, .theme-switch-anim tr {
+      animation: rowFade 0.35s ease;
+    }
+    header.theme-switch-anim {
+      animation: headerPulse 0.35s ease;
+    }
   </style>
 </head>
-<body>
+<body class="light">
   <header>
     <h1>Subject Line Localization Table</h1>
-    <div>Upon choosing language, all of the subject lines are shown below.</div>
+    <div>Choose language and theme below.</div>
   </header>
 
   <main>
@@ -64,6 +125,9 @@
               title="Include/Exclude the On‑Demand Registration Confirmation row">
         Include On‑Demand
       </button>
+
+      <!-- Theme toggle -->
+      <button id="themeBtn" type="button" class="theme-btn">Theme: Light</button>
 
       <!-- Current view label -->
       <span id="viewLabel" aria-live="polite"></span>
@@ -79,6 +143,7 @@
     <table id="subjectTable" aria-live="polite">
       <thead>
         <tr>
+          <th id="snHeader">#</th>
           <th id="enHeader">English Subject Line</th>
           <th>Localized Subject Line</th>
           <th>Copy</th>
@@ -268,13 +333,13 @@
         "Waitlist confirmation": "Registracije za Microsoftov događaj na čekanju",
         "Waitlist denied": "Ažuriranje stanja registracije za Microsoftov događaj",
         "Event update reschedule": "Obavijest registriranim korisnicima o promjeni Microsoftova događaja",
-        "Event Cancellation": "Obavijest registriranim korisnicima o otkazivanju Microsoftova događaja",
-        "Event reminder": "Podsjetnik na Microsoftov događaj",
+        "Event Cancellation": "Obavijest registriranim korisnicima о otkazivanju Microsoftova događaja",
+        "Event reminder": "Podsjetnik на Microsoftov događaj",
         "Thank you for attending": "Hvala vam što ste sudjelovali",
-        "Sorry we missed you": "Žao nam je, nedostajali ste nam",
+        "Sorry we missed you": "Žao нам je, nedostajali ste nam",
         "Registration Pending": "Registracije za Microsoftov događaj na čekanju",
-        "Apology Pre-resolution/Event Agenda Update Email": "Žao nam je, došlo je do problema с vašim događajem",
-        "Microsoft Event On-Demand Registration Confirmation": "Potvrda registracije za Microsoftov događaj na zahtjev"
+        "Apology Pre-resolution/Event Agenda Update Email": "Žao нам je, došlo je do problema с vašim događajem",
+        "Microsoft Event On-Demand Registration Confirmation": "Potvrda registracije za Microsoftov događaj на zahtjev"
       },
       "HU-HU": {
         "Registration confirmation": "Microsoft-eseményre való regisztráció visszaigazolása",
@@ -654,8 +719,15 @@
       // Build list of keys following ORDER, honoring On‑Demand toggle
       const keys = ORDER.filter(k => includeOnDemand ? true : k !== ONDEMAND_KEY);
 
-      keys.forEach(key => {
+      // Numbered rows
+      keys.forEach((key, idx) => {
         const tr = document.createElement('tr');
+
+        // Serial number column (first column)
+        const tdSn = document.createElement('td');
+        tdSn.textContent = String(idx + 1);   // 1-based numbering
+        tdSn.className = 'snCol';
+        tr.appendChild(tdSn);
 
         // English column (toggleable)
         const tdEn = document.createElement('td');
@@ -704,11 +776,32 @@
       renderTable();
     });
 
+    /* Theme toggle */
+    const themeBtn = document.getElementById('themeBtn');
+    const themes = ['light', 'dark', 'blue'];
+    let currentThemeIndex = 0;
+
+    themeBtn.addEventListener('click', () => {
+      currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+      const newTheme = themes[currentThemeIndex];
+
+      // Apply theme class to body; descendants styled via CSS
+      document.body.className = newTheme;
+      themeBtn.textContent = `Theme: ${newTheme.charAt(0).toUpperCase() + newTheme.slice(1)}`;
+
+      // Brief animation on theme change for header and table rows
+      const headerEl = document.querySelector('header');
+      const tableEl = document.getElementById('subjectTable');
+      headerEl.classList.add('theme-switch-anim');
+      tableEl.classList.add('theme-switch-anim');
+      setTimeout(() => {
+        headerEl.classList.remove('theme-switch-anim');
+        tableEl.classList.remove('theme-switch-anim');
+      }, 400);
+    });
+
     /* Initial state */
     langSel.value = 'EN-US';     // default language
-    includeOnDemand = false;     // default: exclude On‑Demand
-    onDemandBtn.setAttribute('aria-pressed', 'false');
     renderTable();
   </script>
 </body>
-</html>
