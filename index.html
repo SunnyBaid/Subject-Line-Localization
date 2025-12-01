@@ -180,6 +180,28 @@
       --cs-fg: #003366;
       --cs-border: #003366;
     }
+
+    /* ---- Theme-aware note ---- */
+    .note {
+      margin-top: 24px;
+      padding: 12px 14px;
+      border: 2px solid var(--cs-border, #000);
+      border-radius: 8px;
+      background: var(--cs-bg, #fff);
+      color: var(--cs-fg, #000);
+      transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+    }
+    .note__title {
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .note__list {
+      margin: 8px 0 0;
+      padding-left: 20px;
+    }
+    .note__list li {
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body class="light">
@@ -229,6 +251,16 @@
       </thead>
       <tbody></tbody>
     </table>
+
+    <!-- Theme-aware note -->
+    <section class="note" aria-label="Legend and upcoming items">
+      <div class="note__title">Note</div>
+      <ul class="note__list">
+        <li><strong>WD</strong> – Waitlist Denied</li>
+        <li><strong>RD</strong> – Registration Denied</li>
+        <li><strong>MVTD</strong> – Table to be added soon</li>
+      </ul>
+    </section>
   </main>
 
   <!-- Toast -->
@@ -569,7 +601,7 @@
         "Event update reschedule": "Notificare de modificare eveniment Microsoft pentru clienții înregistrați",
         "Event Cancellation": "Notificare de anulare eveniment Microsoft pentru clienții înregistrați",
         "Event reminder": "Memento eveniment Microsoft",
-        "Thank you for attending": "Vă mulțumим pentru participare",
+        "Thank you for attending": "Vă mulțumim pentru participare",
         "Sorry we missed you": "Ne pare rău că nu ne-am văzut.",
         "Registration Pending": "Înregistrare la evenimentul Microsoft în așteptare",
         "Apology Pre-resolution/Event Agenda Update Email": "Ne pare rău, am întâmpinat o problemă cu evenimentul dvs.",
@@ -592,8 +624,8 @@
         "Registration confirmation": "Potvrdenie registrácie na udalosť Microsoftu",
         "Waitlist confirmation": "Registrácia na udalosť Microsoftu sa spracúva",
         "Waitlist denied": "Aktualizácia stavu registrácie на udalosť Microsoftu",
-        "Event update reschedule": "Oznámenie o zmene udalosti Microsoftu registrovaným zákazníkom",
-        "Event Cancellation": "Oznámenie o zrušení udalosti Microsoftu registrovaným zákazníkom",
+        "Event update reschedule": "Oznámenie о zmene udalosti Microsoftu registrovaným zákazníkom",
+        "Event Cancellation": "Oznámenie о zrušení udalosti Microsoftu registrovaným zákazníkom",
         "Event reminder": "Pripomenutie udalosti Microsoftu",
         "Thank you for attending": "Ďakujeme за účasť",
         "Sorry we missed you": "Mrzí nás то. Chýbali ste nám.",
@@ -871,11 +903,15 @@
       // Optional: subtle animation
       const headerEl = document.querySelector('header');
       const tableEl = document.getElementById('subjectTable');
+      const noteEl = document.querySelector('.note');
       headerEl.classList.add('theme-switch-anim');
       tableEl.classList.add('theme-switch-anim');
+      if (noteEl) noteEl.classList.add('theme-switch-anim');
+
       setTimeout(() => {
         headerEl.classList.remove('theme-switch-anim');
         tableEl.classList.remove('theme-switch-anim');
+        if (noteEl) noteEl.classList.remove('theme-switch-anim');
       }, 400);
     });
 
@@ -931,5 +967,4 @@
     renderTable();
   </script>
 </body>
-
-
+</html>
