@@ -224,7 +224,7 @@
           aria-expanded="false"
           aria-labelledby="langButton"
         >
-          EN-US
+          EN
         </button>
         <ul id="langList" class="custom-select__list" role="listbox" tabindex="-1" aria-labelledby="langButton" aria-hidden="true"></ul>
       </div>
@@ -818,7 +818,7 @@
     const langSelectRoot = document.getElementById('langSelectRoot');
 
     // Current language state (drives rendering)
-    let currentLang = 'EN-US';
+    let currentLang = 'EN';
 
     // Populate custom select from DATA keys
     function buildLanguageList() {
@@ -930,10 +930,10 @@
 
     /* Render table using currentLang */
     function renderTable() {
-      const selectedLang = currentLang || 'EN-US';
+      const selectedLang = currentLang || 'EN';
       document.getElementById('langLabel').textContent = `Language: ${selectedLang}`;
 
-      const enSubjects = DATA['EN-US'];
+      const enSubjects = DATA['EN'];
       const locSubjects = DATA[selectedLang];
       const tbody = document.getElementById('subjectTable').querySelector('tbody');
       tbody.innerHTML = '';
@@ -981,4 +981,5 @@
   </script>
 </body>
 </html>
+
 
