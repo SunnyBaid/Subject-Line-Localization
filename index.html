@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,6 +34,10 @@
     }
     th { font-weight: 600; }
     tr:nth-child(even) { transition: background 0.4s ease; }
+
+    /* RTL helper */
+    body[dir="rtl"] table { direction: rtl; }
+    body[dir="rtl"] th, body[dir="rtl"] td { text-align: right; }
 
     /* Toast */
     .toast {
@@ -120,10 +125,7 @@
 
     /* --- Custom select (Language) --- */
     .custom-select { position: relative; display: inline-block; }
-    .custom-select__button {
-      min-width: 220px;
-      text-align: left;
-    }
+    .custom-select__button { min-width: 220px; text-align: left; }
     .custom-select__button::after {
       content: "";
       float: right;
@@ -191,17 +193,9 @@
       color: var(--cs-fg, #000);
       transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
     }
-    .note__title {
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-    .note__list {
-      margin: 8px 0 0;
-      padding-left: 20px;
-    }
-    .note__list li {
-      line-height: 1.5;
-    }
+    .note__title { font-weight: 700; margin-bottom: 6px; }
+    .note__list { margin: 8px 0 0; padding-left: 20px; }
+    .note__list li { line-height: 1.5; }
   </style>
 </head>
 <body class="light">
@@ -267,7 +261,7 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script>
-    /* ===== Embedded data (full, same as your previous version) ===== */
+    /* ===== Embedded data (with mechanical fixes applied) ===== */
     const DATA = {
       "EN": {
         "Registration confirmation": "Microsoft Event Registration Confirmation",
@@ -281,7 +275,7 @@
         "Registration Pending": "Microsoft Event Registration Status Update RD",
         "Apology Pre-resolution/Event Agenda Update Email": "Sorry, we experienced an issue with your event",
         "Microsoft Event On-Demand Registration Confirmation": "Microsoft Event On-Demand Registration Confirmation"
- },
+      },
       "EN-US": {
         "Registration confirmation": "Microsoft Event Registration Confirmation",
         "Waitlist confirmation": "Microsoft Event Registration Pending",
@@ -442,11 +436,11 @@
         "Registration confirmation": "אישור רישום לאירוע של Microsoft",
         "Waitlist confirmation": "רישום לאירוע של Microsoft בהמתנה",
         "Waitlist denied": "עדכון מצב הרישום לאירוע של Microsoft",
-        "Event update reschedule": " הודעה על שינוי אירוע של Microsoft עבור לקוחות שנרשמו",
-        "Event Cancellation": "הודעה על שינוי אירוע של Microsoft עבור לקוחות שנרשמו",
-        "Event reminder": " תזכורת לאירוע של Microsoft",
-        "Thank you for attending": " אנו מודים לך על השתתפותך",
-        "Sorry we missed you": " אנו מצטערים שלא הצלחת להגיע",
+        "Event update reschedule": "הודעה על שינוי אירוע של Microsoft עבור לקוחות שנרשמו",
+        "Event Cancellation": "הודעה על ביטול אירוע של Microsoft עבור לקוחות שנרשמו",
+        "Event reminder": "תזכורת לאירוע של Microsoft",
+        "Thank you for attending": "אנו מודים לך על השתתפותך",
+        "Sorry we missed you": "אנו מצטערים שלא הצלחת להגיע",
         "Registration Pending": "רישום לאירוע של Microsoft בהמתנה",
         "Apology Pre-resolution/Event Agenda Update Email": "מצטערים, נתקלנו בבעיה בהרשמה שלכם",
         "Microsoft Event On-Demand Registration Confirmation": "אישור רישום לאירוע לפי דרישה של Microsoft"
@@ -456,12 +450,12 @@
         "Waitlist confirmation": "Registracije za Microsoftov događaj na čekanju",
         "Waitlist denied": "Ažuriranje stanja registracije za Microsoftov događaj",
         "Event update reschedule": "Obavijest registriranim korisnicima o promjeni Microsoftova događaja",
-        "Event Cancellation": "Obavijest registriranim korisnicima о otkazivanju Microsoftova događaja",
-        "Event reminder": "Podsjetnik nа Microsoftov događaj",
+        "Event Cancellation": "Obavijest registriranim korisnicima o otkazivanju Microsoftova događaja",
+        "Event reminder": "Podsjetnik na Microsoftov događaj",
         "Thank you for attending": "Hvala vam što ste sudjelovali",
         "Sorry we missed you": "Žao nam je, nedostajali ste nam",
         "Registration Pending": "Registracije za Microsoftov događaj na čekanju",
-        "Apology Pre-resolution/Event Agenda Update Email": "Žao nam je, došlo je do problema с vašim događajem",
+        "Apology Pre-resolution/Event Agenda Update Email": "Žao nam je, došlo je do problema s vašim događajem",
         "Microsoft Event On-Demand Registration Confirmation": "Potvrda registracije za Microsoftov događaj na zahtjev"
       },
       "HU-HU": {
@@ -469,7 +463,7 @@
         "Waitlist confirmation": "Microsoft-eseményre való regisztráció függőben",
         "Waitlist denied": "Microsoft-eseményre való regisztrációval kapcsolatos állapotfrissítés",
         "Event update reschedule": "Értesítés Microsoft-eseményt érintő változásról regisztrált ügyfeleknek",
-        "Event Cancellation": " Értesítés Microsoft-esemény lemondásáról regisztrált ügyfeleknek",
+        "Event Cancellation": "Értesítés Microsoft-esemény lemondásáról regisztrált ügyfeleknek",
         "Event reminder": "Microsoft-eseménnyel kapcsolatos emlékeztető",
         "Thank you for attending": "Köszönjük részvételét!",
         "Sorry we missed you": "Sajnáljuk, hogy nem tudott részt venni az eseményen!",
@@ -544,16 +538,16 @@
       },
       "NB-NO": {
         "Registration confirmation": "Bekreftelse for påmelding til Microsoft-arrangementet",
-        "Waitlist confirmation": "Påmeldingen din til Microsoft-arrangementet er satt на vent",
-        "Waitlist denied": "Statusoppdatering for påmeldingen din til Microsoft-arrangementet",
-        "Event update reschedule": "Varsel om endring av Microsoft-arrangement for påmeldte kunder",
-        "Event Cancellation": "Varsel om avlysning av Microsoft-arrangement for registrerte kunder",
-        "Event reminder": "Påminnelse om Microsoft-arrangement",
+        "Waitlist confirmation": "Påmeldingen din til Microsoft‑arrangementet er satt på vent",
+        "Waitlist denied": "Statusoppdatering for påmeldingen din til Microsoft‑arrangementet",
+        "Event update reschedule": "Varsel om endring av Microsoft‑arrangement for påmeldte kunder",
+        "Event Cancellation": "Varsel om avlysning av Microsoft‑arrangement for registrerte kunder",
+        "Event reminder": "Påminnelse om Microsoft‑arrangement",
         "Thank you for attending": "Takk for at du kom!",
         "Sorry we missed you": "Trist at du ikke kom",
-        "Registration Pending": "Påmeldingen din til Microsoft-arrangementet er satt på vent",
-        "Apology Pre-resolution/Event Agenda Update Email": "Beklager, vi det har oppstått et problem med arrangementet",
-        "Microsoft Event On-Demand Registration Confirmation": "Bekreftelse av påmelding til Microsoft-arrangementet"
+        "Registration Pending": "Påmeldingen din til Microsoft‑arrangementet er satt på vent",
+        "Apology Pre-resolution/Event Agenda Update Email": "Beklager, det har oppstått et problem med arrangementet",
+        "Microsoft Event On-Demand Registration Confirmation": "Bekreftelse av påmelding til Microsoft‑arrangementet"
       },
       "NL-NL": {
         "Registration confirmation": "Microsoft-evenement: aanmeldingsbevestiging",
@@ -577,7 +571,7 @@
         "Event reminder": "Przypomnienie o wydarzeniu Microsoft",
         "Thank you for attending": "Dziękujemy za udział",
         "Sorry we missed you": "Przykro nam, że nie było Cię z nami",
-        "Registration Pending": "Rejestracja на wydarzenie Microsoft oczekuje",
+        "Registration Pending": "Rejestracja na wydarzenie Microsoft oczekuje",
         "Apology Pre-resolution/Event Agenda Update Email": "Przepraszamy, wystąpił problem z Twoim wydarzeniem",
         "Microsoft Event On-Demand Registration Confirmation": "Potwierdzenie rejestracji na wydarzenie Microsoft na żądanie"
       },
@@ -604,7 +598,7 @@
         "Thank you for attending": "Obrigado por Participar",
         "Sorry we missed you": "Lamentamos que Não Tenha Podido Participar",
         "Registration Pending": "Registo no Evento da Microsoft Pendente",
-        "Apology Pre-resolution/Event Agenda Update Email": "Desculpe, tivemos um problema med o seu evento",
+        "Apology Pre-resolution/Event Agenda Update Email": "Desculpe, tivemos um problema com o seu evento",
         "Microsoft Event On-Demand Registration Confirmation": "Confirmação de Registo no Evento On-Demand da Microsoft"
       },
       "RO-RO": {
@@ -636,26 +630,26 @@
       "SK-SK": {
         "Registration confirmation": "Potvrdenie registrácie na udalosť Microsoftu",
         "Waitlist confirmation": "Registrácia na udalosť Microsoftu sa spracúva",
-        "Waitlist denied": "Aktualizácia stavu registrácie на udalosť Microsoftu",
-        "Event update reschedule": "Oznámenie о zmene udalosti Microsoftu registrovaným zákazníkom",
+        "Waitlist denied": "Aktualizácia stavu registrácie na udalosť Microsoftu",
+        "Event update reschedule": "Oznámenie o zmene udalosti Microsoftu registrovaným zákazníkom",
         "Event Cancellation": "Oznámenie o zrušení udalosti Microsoftu registrovaným zákazníkom",
         "Event reminder": "Pripomenutie udalosti Microsoftu",
-        "Thank you for attending": "Ďakujeme за účasť",
+        "Thank you for attending": "Ďakujeme za účasť",
         "Sorry we missed you": "Mrzí nás to. Chýbali ste nám.",
-        "Registration Pending": "Registrácia на udalosť Microsoftu sa spracúva",
+        "Registration Pending": "Registrácia na udalosť Microsoftu sa spracúva",
         "Apology Pre-resolution/Event Agenda Update Email": "Ľutujeme, vyskytol sa nejaký problém s podujatím, ktorého sa plánujete zúčastniť",
         "Microsoft Event On-Demand Registration Confirmation": "Potvrdenie registrácie na udalosť Microsoftu na požiadanie"
       },
       "SL-SI": {
         "Registration confirmation": "Potrditev registracije za dogodek družbe Microsoft",
-        "Waitlist confirmation": "Registracija за dogodek družbe Microsoft je v teku",
+        "Waitlist confirmation": "Registracija za dogodek družbe Microsoft je v teku",
         "Waitlist denied": "Posodobitev stanja registracije za dogodek družbe Microsoft",
         "Event update reschedule": "Obvestilo o spremembi glede dogodka družbe Microsoft za registrirane stranke",
         "Event Cancellation": "Obvestilo o preklicu dogodka družbe Microsoft za registrirane stranke",
         "Event reminder": "Opomnik za dogodek družbe Microsoft",
         "Thank you for attending": "Hvala za udeležbo",
         "Sorry we missed you": "Žal nam je, da se niste mogli udeležiti dogodka",
-        "Registration Pending": "Registracija за dogodek družbe Microsoft je v teku",
+        "Registration Pending": "Registracija za dogodek družbe Microsoft je v teku",
         "Apology Pre-resolution/Event Agenda Update Email": "Žal je prišlo do težave z dogodkom",
         "Microsoft Event On-Demand Registration Confirmation": "Potrditev registracije za dogodek družbe Microsoft na zahtevo"
       },
@@ -781,19 +775,23 @@
       "Microsoft Event On-Demand Registration Confirmation"
     ];
 
+    /* Prefs keys */
+    const LS_KEYS = { theme: 'sl_theme', lang: 'sl_lang', includeOD: 'sl_include_od' };
+    const RTL_LANGS = ['AR-SA', 'HE-IL'];
+
     /* Toast helper */
-    function showToast(message) {
+    function announce(message) {
       const toast = document.getElementById('toast');
       toast.textContent = message;
       toast.classList.add('show');
-      clearTimeout(showToast._t);
-      showToast._t = setTimeout(() => toast.classList.remove('show'), 1200);
+      clearTimeout(announce._t);
+      announce._t = setTimeout(() => toast.classList.remove('show'), 1200);
     }
 
-    /* Copy helper */
+    /* Copy helpers */
     function copyTextFallback(text) {
       const clean = (text || '').toString().trim();
-      if (!clean) { showToast('Nothing to copy'); return; }
+      if (!clean) { announce('Nothing to copy'); return; }
       try {
         const ta = document.createElement('textarea');
         ta.value = clean;
@@ -805,10 +803,24 @@
         ta.select();
         const ok = document.execCommand('copy');
         document.body.removeChild(ta);
-        showToast(ok ? 'Copied' : 'Copy failed');
-      } catch (err) {
-        console.error('Copy error:', err);
-        showToast('Copy failed');
+        announce(ok ? 'Copied' : 'Copy failed');
+      } catch {
+        announce('Copy failed');
+      }
+    }
+
+    async function copyText(text) {
+      const clean = (text || '').toString().trim();
+      if (!clean) { announce('Nothing to copy'); return; }
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(clean);
+          announce('Copied');
+        } else {
+          copyTextFallback(clean);
+        }
+      } catch {
+        copyTextFallback(clean);
       }
     }
 
@@ -817,8 +829,13 @@
     const langList = document.getElementById('langList');
     const langSelectRoot = document.getElementById('langSelectRoot');
 
-    // Current language state (drives rendering)
+    // Current language & theme state (drives rendering)
     let currentLang = 'EN';
+    const themes = ['light', 'dark', 'blue'];
+    let currentThemeIndex = 0;
+
+    // On‑Demand toggle state
+    let includeOnDemand = false;
 
     // Populate custom select from DATA keys
     function buildLanguageList() {
@@ -856,16 +873,6 @@
       if (!langSelectRoot.contains(e.target)) closeLangList();
     }
 
-    function selectLanguage(val) {
-      currentLang = val;
-      langButton.textContent = val;
-      // update selected visual state
-      langList.querySelectorAll('li').forEach(li => {
-        li.setAttribute('aria-selected', String(li.dataset.value === val));
-      });
-      renderTable();
-    }
-
     function focusNextLang(delta) {
       const items = Array.from(langList.querySelectorAll('li'));
       const current = document.activeElement;
@@ -894,19 +901,17 @@
     });
 
     /* Include/Exclude On‑Demand toggle */
-    let includeOnDemand = false;
     const onDemandBtn = document.getElementById('onDemandBtn');
     onDemandBtn.addEventListener('click', () => {
       includeOnDemand = !includeOnDemand;
       onDemandBtn.setAttribute('aria-pressed', String(includeOnDemand));
       onDemandBtn.textContent = includeOnDemand ? 'Include On‑Demand (ON)' : 'Include On‑Demand';
+      savePrefs();
       renderTable();
     });
 
     /* Theme toggle */
     const themeBtn = document.getElementById('themeBtn');
-    const themes = ['light', 'dark', 'blue'];
-    let currentThemeIndex = 0;
     themeBtn.addEventListener('click', () => {
       currentThemeIndex = (currentThemeIndex + 1) % themes.length;
       const newTheme = themes[currentThemeIndex];
@@ -926,7 +931,46 @@
         tableEl.classList.remove('theme-switch-anim');
         if (noteEl) noteEl.classList.remove('theme-switch-anim');
       }, 400);
+
+      savePrefs();
     });
+
+    /* Persistence */
+    function loadPrefs() {
+      const savedTheme = localStorage.getItem(LS_KEYS.theme);
+      const savedLang = localStorage.getItem(LS_KEYS.lang);
+      const savedOD = localStorage.getItem(LS_KEYS.includeOD);
+
+      // Theme
+      if (savedTheme && ['light', 'dark', 'blue'].includes(savedTheme)) {
+        document.body.className = savedTheme;
+        themeBtn.textContent = `Theme: ${savedTheme.charAt(0).toUpperCase() + savedTheme.slice(1)}`;
+        currentThemeIndex = ['light', 'dark', 'blue'].indexOf(savedTheme);
+      }
+
+      // Language
+      if (savedLang && DATA[savedLang]) {
+        currentLang = savedLang;
+        langButton.textContent = savedLang;
+      }
+
+      // On‑Demand
+      includeOnDemand = savedOD === 'true';
+      onDemandBtn.setAttribute('aria-pressed', String(includeOnDemand));
+      onDemandBtn.textContent = includeOnDemand ? 'Include On‑Demand (ON)' : 'Include On‑Demand';
+
+      applyDirForLang(currentLang);
+    }
+
+    function savePrefs() {
+      localStorage.setItem(LS_KEYS.theme, document.body.className || 'light');
+      localStorage.setItem(LS_KEYS.lang, currentLang || 'EN');
+      localStorage.setItem(LS_KEYS.includeOD, String(includeOnDemand));
+    }
+
+    function applyDirForLang(code) {
+      document.body.setAttribute('dir', RTL_LANGS.includes(code) ? 'rtl' : 'ltr');
+    }
 
     /* Render table using currentLang */
     function renderTable() {
@@ -966,7 +1010,7 @@
         btn.textContent = 'Copy';
         btn.setAttribute('aria-label', `Copy localized text for "${key}"`);
         btn.disabled = !localizedText || !localizedText.toString().trim();
-        btn.addEventListener('click', () => copyTextFallback(localizedText));
+        btn.addEventListener('click', () => copyText(localizedText)); // modern copy with fallback
         tdCopy.appendChild(btn);
         tr.appendChild(tdCopy);
 
@@ -974,12 +1018,23 @@
       });
     }
 
+    /* Language select */
+    function selectLanguage(val) {
+      currentLang = val;
+      langButton.textContent = val;
+      // update selected visual state
+      langList.querySelectorAll('li').forEach(li => {
+        li.setAttribute('aria-selected', String(li.dataset.value === val));
+      });
+      applyDirForLang(val);
+      renderTable();
+      savePrefs();
+    }
+
     /* Initialize custom select and table */
     buildLanguageList();
+    loadPrefs();
     langButton.textContent = currentLang;
     renderTable();
   </script>
 </body>
-</html>
-
-
