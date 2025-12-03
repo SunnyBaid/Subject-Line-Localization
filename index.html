@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -167,21 +166,9 @@
     }
 
     /* Theme variables */
-    body.light {
-      --cs-bg: #fff;
-      --cs-fg: #000;
-      --cs-border: #000;
-    }
-    body.dark {
-      --cs-bg: #2c2c2c;
-      --cs-fg: #fff;
-      --cs-border: #bbb;
-    }
-    body.blue {
-      --cs-bg: #fff;
-      --cs-fg: #003366;
-      --cs-border: #003366;
-    }
+    body.light { --cs-bg: #fff; --cs-fg: #000; --cs-border: #000; }
+    body.dark  { --cs-bg: #2c2c2c; --cs-fg: #fff; --cs-border: #bbb; }
+    body.blue  { --cs-bg: #fff; --cs-fg: #003366; --cs-border: #003366; }
 
     /* ---- Theme-aware note ---- */
     .note {
@@ -196,8 +183,39 @@
     .note__title { font-weight: 700; margin-bottom: 6px; }
     .note__list { margin: 8px 0 0; padding-left: 20px; }
     .note__list li { line-height: 1.5; }
+
+    /* ---- Theme-aware MVTD panel ---- */
+    .mvtd-panel {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border: 2px solid var(--cs-border, #000);
+      border-radius: 8px;
+      background: var(--cs-bg, #fff);
+      color: var(--cs-fg, #000);
+    }
+    .mvtd-row { display: grid; grid-template-columns: 1fr; gap: 8px; }
+    .mvtd-row label { font-weight: 600; }
+    .mvtd-input {
+      width: 100%; padding: 8px;
+      border: 2px solid var(--cs-border, #000);
+      border-radius: 6px;
+      background: var(--cs-bg, #fff); color: var(--cs-fg, #000);
+    }
+    .mvtd-result { margin-top: 12px; }
+    .mvtd-actions { display: flex; gap: 8px; margin-top: 8px; }
+
+    /* ---- Description column toggle (hide/show) ---- */
+    /* Table has columns: 1 #, 2 Subject in EMC, 3 Description in EMC, 4 Localized Subject Line, 5 Copy */
+    #subjectTable.desc-hidden th:nth-child(3),
+    #subjectTable.desc-hidden td:nth-child(3) {
+      display: none;
+    }
+
+    /* Optional width for Description column */
+    #descHeader, .descCol { width: 320px; }
   </style>
 </head>
+
 <body class="light">
   <header>
     <h1>Subject Line Localization Table</h1>
@@ -230,6 +248,11 @@
 
       <!-- Theme toggle -->
       <button id="themeBtn" type="button" class="theme-btn">Theme: Light</button>
+
+      <!-- NEW: Description column show/hide toggle -->
+      <button id="descToggleBtn" type="button" class="toggle-btn" aria-pressed="true" title="Hide/Show Description in EMC column">
+        Show Description (ON)
+      </button>
     </div>
 
     <div class="lang-label" id="langLabel"></div>
@@ -239,6 +262,7 @@
         <tr>
           <th id="snHeader">#</th>
           <th id="enHeader">Subject in EMC</th>
+          <th id="descHeader">Description in EMC</th>
           <th>Localized Subject Line</th>
           <th>Copy</th>
         </tr>
@@ -255,13 +279,56 @@
         <li><strong>MVTD</strong> – Table to be added soon</li>
       </ul>
     </section>
+
+    <!-- === MVTD Lookup (Integrated) === -->
+    <section aria-label="MVTD Lookup" style="margin-top:24px;">
+      <button id="mvtdBtn" type="button" class="toggle-btn" aria-expanded="false">MVTD Lookup</button>
+
+      <div id="mvtdForm" class="mvtd-panel" style="display:none;" aria-hidden="true">
+        <div class="mvtd-row">
+          <label for="mvtdEvent">Event Sub Type</label>
+          <select id="mvtdEvent" class="mvtd-input" aria-describedby="mvtdEventHint">
+            <option value="">Select...</option>
+            <!-- options populated by JS -->
+          </select>
+          <small id="mvtdEventHint">Pick from MVTD scope (currently supported where primary language is English).</small>
+
+          <label for="mvtdLang">Language</label>
+          <select id="mvtdLang" class="mvtd-input">
+            <option value="EN-US">EN-US</option>
+          </select>
+
+          <label for="mvtdDay">Day Format</label>
+          <select id="mvtdDay" class="mvtd-input">
+            <option value="1 Day">1 Day</option>
+            <option value="2 Day">2 Day</option>
+          </select>
+        </div>
+
+        <div class="mvtd-actions">
+          <button id="mvtdSubmit" type="button" class="toggle-btn">Get Subject Line</button>
+          <button id="mvtdReset" type="button" class="toggle-btn">Reset</button>
+        </div>
+
+        <div id="mvtdResult" class="mvtd-result note" role="status" aria-live="polite" style="display:none;">
+          <div><strong>Subject Line:</strong> <span id="mvtdSubjectOut"></span></div>
+          <div><strong>Friendly Name:</strong> <span id="mvtdFriendlyOut"></span></div>
+          <div class="mvtd-actions">
+            <button id="mvtdCopySubject" type="button" class="copy-btn">Copy Subject</button>
+            <button id="mvtdCopyFriendly" type="button" class="copy-btn">Copy Friendly Name</button>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- === End MVTD === -->
+
   </main>
 
   <!-- Toast -->
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script>
-    /* ===== Embedded data (with mechanical fixes applied) ===== */
+    /* ===== Embedded data (mechanical fixes applied previously) ===== */
     const DATA = {
       "EN": {
         "Registration confirmation": "Microsoft Event Registration Confirmation",
@@ -289,7 +356,8 @@
         "Apology Pre-resolution/Event Agenda Update Email": "Sorry, we experienced an issue with your event",
         "Microsoft Event On-Demand Registration Confirmation": "Microsoft Event On-Demand Registration Confirmation"
       },
-      "AR-SA": {
+      /* ... keep all other locales from your last version (unchanged) ... */
+     "AR-SA": {
         "Registration confirmation": "تأكيد تسـجيل الأحداث من Microsoft",
         "Waitlist confirmation": "تسـجيل الأحداث من Microsoft معلّق",
         "Waitlist denied": "تحديث حالة تسـجيل الأحداث من Microsoft",
@@ -759,6 +827,7 @@
       }
     };
 
+
     /* Constants */
     const ONDEMAND_KEY = "Microsoft Event On-Demand Registration Confirmation";
     const ORDER = [
@@ -776,7 +845,15 @@
     ];
 
     /* Prefs keys */
-    const LS_KEYS = { theme: 'sl_theme', lang: 'sl_lang', includeOD: 'sl_include_od' };
+    const LS_KEYS = {
+      theme: 'sl_theme',
+      lang: 'sl_lang',
+      includeOD: 'sl_include_od',
+      showDesc: 'sl_show_desc',
+      mvtdEvent: 'mvtd_event',
+      mvtdLang: 'mvtd_lang',
+      mvtdDay: 'mvtd_day'
+    };
     const RTL_LANGS = ['AR-SA', 'HE-IL'];
 
     /* Toast helper */
@@ -808,7 +885,6 @@
         announce('Copy failed');
       }
     }
-
     async function copyText(text) {
       const clean = (text || '').toString().trim();
       if (!clean) { announce('Nothing to copy'); return; }
@@ -837,6 +913,9 @@
     // On‑Demand toggle state
     let includeOnDemand = false;
 
+    // Description column visibility
+    let showDescription = true;
+
     // Populate custom select from DATA keys
     function buildLanguageList() {
       langList.innerHTML = '';
@@ -849,9 +928,7 @@
         li.dataset.value = code;
         if (code === currentLang) li.setAttribute('aria-selected', 'true');
         li.addEventListener('click', () => { selectLanguage(code); closeLangList(); });
-        li.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') { selectLanguage(code); closeLangList(); }
-        });
+        li.addEventListener('keydown', (e) => { if (e.key === 'Enter') { selectLanguage(code); closeLangList(); } });
         frag.appendChild(li);
       });
       langList.appendChild(frag);
@@ -869,9 +946,7 @@
       langButton.setAttribute('aria-expanded', 'false');
       langButton.focus();
     }
-    function onDocClickCloseLang(e) {
-      if (!langSelectRoot.contains(e.target)) closeLangList();
-    }
+    function onDocClickCloseLang(e) { if (!langSelectRoot.contains(e.target)) closeLangList(); }
 
     function focusNextLang(delta) {
       const items = Array.from(langList.querySelectorAll('li'));
@@ -887,10 +962,7 @@
       expanded ? closeLangList() : openLangList();
     });
     langButton.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        openLangList();
-      }
+      if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLangList(); }
     });
     langList.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') { e.preventDefault(); closeLangList(); }
@@ -935,11 +1007,32 @@
       savePrefs();
     });
 
+    /* Description column toggle */
+    const descToggleBtn = document.getElementById('descToggleBtn');
+    function applyDescVisibility() {
+      const tbl = document.getElementById('subjectTable');
+      if (showDescription) {
+        tbl.classList.remove('desc-hidden');
+        descToggleBtn.textContent = 'Show Description (ON)';
+        descToggleBtn.setAttribute('aria-pressed', 'true');
+      } else {
+        tbl.classList.add('desc-hidden');
+        descToggleBtn.textContent = 'Show Description (OFF)';
+        descToggleBtn.setAttribute('aria-pressed', 'false');
+      }
+    }
+    descToggleBtn.addEventListener('click', () => {
+      showDescription = !showDescription;
+      applyDescVisibility();
+      savePrefs();
+    });
+
     /* Persistence */
     function loadPrefs() {
       const savedTheme = localStorage.getItem(LS_KEYS.theme);
       const savedLang = localStorage.getItem(LS_KEYS.lang);
       const savedOD = localStorage.getItem(LS_KEYS.includeOD);
+      const savedDesc = localStorage.getItem(LS_KEYS.showDesc);
 
       // Theme
       if (savedTheme && ['light', 'dark', 'blue'].includes(savedTheme)) {
@@ -959,13 +1052,30 @@
       onDemandBtn.setAttribute('aria-pressed', String(includeOnDemand));
       onDemandBtn.textContent = includeOnDemand ? 'Include On‑Demand (ON)' : 'Include On‑Demand';
 
+      // Description column visibility
+      showDescription = savedDesc !== 'false'; // default true
+      applyDescVisibility();
+
       applyDirForLang(currentLang);
+
+      // Load MVTD selections
+      const mvtdEventSaved = localStorage.getItem(LS_KEYS.mvtdEvent);
+      const mvtdLangSaved  = localStorage.getItem(LS_KEYS.mvtdLang);
+      const mvtdDaySaved   = localStorage.getItem(LS_KEYS.mvtdDay);
+      if (mvtdEventSaved) document.getElementById('mvtdEvent').value = mvtdEventSaved;
+      if (mvtdLangSaved)  document.getElementById('mvtdLang').value  = mvtdLangSaved;
+      if (mvtdDaySaved)   document.getElementById('mvtdDay').value   = mvtdDaySaved;
     }
 
     function savePrefs() {
       localStorage.setItem(LS_KEYS.theme, document.body.className || 'light');
       localStorage.setItem(LS_KEYS.lang, currentLang || 'EN');
       localStorage.setItem(LS_KEYS.includeOD, String(includeOnDemand));
+      localStorage.setItem(LS_KEYS.showDesc, String(showDescription));
+      // MVTD selections
+      localStorage.setItem(LS_KEYS.mvtdEvent, document.getElementById('mvtdEvent').value || '');
+      localStorage.setItem(LS_KEYS.mvtdLang,  document.getElementById('mvtdLang').value || 'EN-US');
+      localStorage.setItem(LS_KEYS.mvtdDay,   document.getElementById('mvtdDay').value || '');
     }
 
     function applyDirForLang(code) {
@@ -988,21 +1098,31 @@
       keys.forEach((key, idx) => {
         const tr = document.createElement('tr');
 
+        // Serial #
         const tdSn = document.createElement('td');
         tdSn.textContent = String(idx + 1);
         tdSn.className = 'snCol';
         tr.appendChild(tdSn);
 
+        // Subject in EMC (EN)
         const tdEn = document.createElement('td');
         tdEn.textContent = enSubjects[key] || '';
         tdEn.className = 'enCol';
         tr.appendChild(tdEn);
 
+        // NEW: Description in EMC (middle column)
+        const tdDesc = document.createElement('td');
+        tdDesc.textContent = DESCRIPTIONS_IN_EMC[key] || '';
+        tdDesc.className = 'descCol';
+        tr.appendChild(tdDesc);
+
+        // Localized Subject Line
         const tdLoc = document.createElement('td');
         const localizedText = (locSubjects && key in locSubjects) ? (locSubjects[key] || '') : '';
         tdLoc.textContent = localizedText;
         tr.appendChild(tdLoc);
 
+        // Copy button (localized)
         const tdCopy = document.createElement('td');
         const btn = document.createElement('button');
         btn.type = 'button';
@@ -1010,12 +1130,15 @@
         btn.textContent = 'Copy';
         btn.setAttribute('aria-label', `Copy localized text for "${key}"`);
         btn.disabled = !localizedText || !localizedText.toString().trim();
-        btn.addEventListener('click', () => copyText(localizedText)); // modern copy with fallback
+        btn.addEventListener('click', () => copyText(localizedText));
         tdCopy.appendChild(btn);
         tr.appendChild(tdCopy);
 
         tbody.appendChild(tr);
       });
+
+      // Apply current desc visibility after re-render
+      applyDescVisibility();
     }
 
     /* Language select */
@@ -1031,10 +1154,151 @@
       savePrefs();
     }
 
-    /* Initialize custom select and table */
+    /* ===== MVTD dataset (scope as provided) ===== */
+    const MVTD_DATA = [
+      {
+        eventSubType: "Microsoft Virtual Training Day: Develop Generative AI Apps with Azure AI Foundry",
+        language: "EN-US",
+        dayFormat: "2 Day",
+        subjectLine: "Thanks for joining Develop Generative AI Apps with Azure AI Foundry",
+        friendlyName: "Microsoft Virtual Training Day: Develop Generative AI Apps with Azure AI Foundry"
+      },
+      {
+        eventSubType: "Microsoft Virtual Training Day: Build Agents & Solutions with Azure AI Foundry",
+        language: "EN-US",
+        dayFormat: "1 Day",
+        subjectLine: "Thanks for joining Build Agents & Solutions with Azure AI Foundry",
+        friendlyName: "Microsoft Virtual Training Day: Build Agents & Solutions with Azure AI Foundry"
+      },
+      {
+        eventSubType: "Microsoft Virtual Training Day: Secure and Automate Microsoft 365 Copilot Agents",
+        language: "EN-US",
+        dayFormat: "1 Day",
+        subjectLine: "Thanks for joining Secure and Automate Microsoft 365 Copilot Agents",
+        friendlyName: "Microsoft Virtual Training Day: Secure and Automate Microsoft 365 Copilot Agents"
+      },
+      {
+        eventSubType: "Microsoft Virtual Training Day: Agents for Everyday Business Processes with Agents",
+        language: "EN-US",
+        dayFormat: "1 Day",
+        subjectLine: "Thanks for joining Agents for Everyday Business Processes with Agents",
+        friendlyName: "Microsoft Virtual Training Day: Agents for Everyday Business Processes with Agents"
+      },
+      {
+        eventSubType: "Microsoft Virtual Training Day: Crack Agents in Microsoft Copilot Studio",
+        language: "EN-US",
+        dayFormat: "2 Day",
+        subjectLine: "Thanks for joining Crack Agents in Microsoft Copilot Studio",
+        friendlyName: "Microsoft Virtual Training Day: Crack Agents in Microsoft Copilot Studio"
+      },
+      {
+        eventSubType: "Microsoft Virtual Training Day: Protect and Mitigate Cybersecurity Threats",
+        language: "EN-US",
+        dayFormat: "2 Day",
+        subjectLine: "Thanks for joining Protect and Mitigate Cybersecurity Threats",
+        friendlyName: "Microsoft Virtual Training Day: Protect and Mitigate Cybersecurity Threats"
+      },
+      {
+        eventSubType: "Microsoft Virtual Training Day: Introduction to Microsoft 365 Copilot and Agents",
+        language: "EN-US",
+        dayFormat: "1 Day",
+        subjectLine: "Thanks for joining Introduction to Microsoft 365 Copilot and Agents",
+        friendlyName: "Microsoft Virtual Training Day: Introduction to Microsoft 365 Copilot and Agents"
+      },
+      {
+        eventSubType: "Microsoft Virtual Training Day: Introduction to Microsoft Power Platform",
+        language: "EN-US",
+        dayFormat: "2 Day",
+        subjectLine: "Thanks for joining Introduction to Microsoft Power Platform",
+        friendlyName: "Microsoft Virtual Training Day: Introduction to Microsoft Power Platform"
+      }
+    ];
+
+    /* ===== MVTD UI logic ===== */
+    const mvtdBtn          = document.getElementById('mvtdBtn');
+    const mvtdForm         = document.getElementById('mvtdForm');
+    const mvtdEventSelect  = document.getElementById('mvtdEvent');
+    const mvtdLangSelect   = document.getElementById('mvtdLang');
+    const mvtdDaySelect    = document.getElementById('mvtdDay');
+    const mvtdSubmit       = document.getElementById('mvtdSubmit');
+    const mvtdReset        = document.getElementById('mvtdReset');
+    const mvtdResultBlock  = document.getElementById('mvtdResult');
+    const mvtdSubjectOut   = document.getElementById('mvtdSubjectOut');
+    const mvtdFriendlyOut  = document.getElementById('mvtdFriendlyOut');
+    const mvtdCopySubject  = document.getElementById('mvtdCopySubject');
+    const mvtdCopyFriendly = document.getElementById('mvtdCopyFriendly');
+
+    // Populate Event Sub Type dropdown (unique list)
+    function populateMvtdEventOptions() {
+      const seen = new Set();
+      MVTD_DATA.forEach(item => {
+        if (seen.has(item.eventSubType)) return;
+        const opt = document.createElement('option');
+        opt.value = item.eventSubType;
+        opt.textContent = item.eventSubType;
+        mvtdEventSelect.appendChild(opt);
+        seen.add(item.eventSubType);
+      });
+    }
+
+    // Toggle MVTD panel visibility
+    mvtdBtn.addEventListener('click', () => {
+      const isHidden = mvtdForm.style.display === 'none' || mvtdForm.style.display === '';
+      mvtdForm.style.display = isHidden ? 'block' : 'none';
+      mvtdForm.setAttribute('aria-hidden', String(!isHidden));
+      mvtdBtn.setAttribute('aria-expanded', String(isHidden));
+    });
+
+    // Submit: find match and show results
+    mvtdSubmit.addEventListener('click', () => {
+      const eventType = mvtdEventSelect.value;
+      const lang      = mvtdLangSelect.value;
+      const day       = mvtdDaySelect.value;
+
+      if (!eventType || !lang || !day) {
+        announce('Please select Event, Language, and Day Format');
+        return;
+      }
+
+      const match = MVTD_DATA.find(item =>
+        item.eventSubType === eventType &&
+        item.language === lang &&
+        item.dayFormat === day
+      );
+
+      savePrefs(); // persist selections
+
+      if (match) {
+        mvtdSubjectOut.textContent  = match.subjectLine;
+        mvtdFriendlyOut.textContent = match.friendlyName;
+        mvtdResultBlock.style.display = 'block';
+      } else {
+        mvtdSubjectOut.textContent  = '';
+        mvtdFriendlyOut.textContent = '';
+        mvtdResultBlock.style.display = 'none';
+        announce('No match found. Check selections.');
+      }
+    });
+
+    // Reset MVTD form
+    mvtdReset.addEventListener('click', () => {
+      mvtdEventSelect.value = '';
+      mvtdLangSelect.value  = 'EN-US';
+      mvtdDaySelect.value   = '1 Day';
+      mvtdResultBlock.style.display = 'none';
+      savePrefs();
+    });
+
+    // Copy buttons
+    mvtdCopySubject.addEventListener('click', () => copyText(mvtdSubjectOut.textContent));
+    mvtdCopyFriendly.addEventListener('click', () => copyText(mvtdFriendlyOut.textContent));
+
+    /* ===== Initialize ===== */
+    populateMvtdEventOptions();
     buildLanguageList();
     loadPrefs();
-    langButton.textContent = currentLang;
+    document.getElementById('langButton').textContent = currentLang;
     renderTable();
   </script>
 </body>
+</html>
