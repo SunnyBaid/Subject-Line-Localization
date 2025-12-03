@@ -5,214 +5,51 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Subject Line Localization Table</title>
   <style>
-    /* Base layout */
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      margin: 0;
-      transition: background 0.4s ease, color 0.4s ease;
-    }
-    header {
-      padding: 24px;
-      border-bottom: 1px solid #ccc;
-      transition: background 0.4s ease, color 0.4s ease;
-    }
-    h1 { margin: 0 0 8px; font-size: 20px; }
-    main { max-width: 1000px; margin: 32px auto; padding: 0 24px; }
-    .controls { margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-    .switch { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
-    .lang-label { font-weight: bold; margin-top: 12px; }
+    body { font-family:'Segoe UI',Arial,sans-serif; margin:0; transition:background .4s ease,color .4s ease; }
+    header { padding:24px; border-bottom:1px solid #ccc; }
+    h1 { margin:0 0 8px; font-size:20px; }
+    main { max-width:1000px; margin:32px auto; padding:0 24px; }
+    .controls { margin-bottom:16px; display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
+    .lang-label { font-weight:bold; margin-top:12px; }
 
-    /* Table */
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; transition: background 0.4s ease, color 0.4s ease; }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      transition: background 0.4s ease, color 0.4s ease;
-    }
-    th { font-weight: 600; }
-    tr:nth-child(even) { transition: background 0.4s ease; }
+    table { width:100%; border-collapse:collapse; margin-top:12px; }
+    th,td { border:1px solid #ddd; padding:8px; text-align:left; }
+    th { font-weight:600; }
+    tr:nth-child(even) { background:#fafafa; }
 
-    /* RTL helper */
-    body[dir="rtl"] table { direction: rtl; }
-    body[dir="rtl"] th, body[dir="rtl"] td { text-align: right; }
-
-    /* Toast */
-    .toast {
-      position: fixed;
-      bottom: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #000;
-      color: #fff;
-      padding: 8px 12px;
-      border-radius: 4px;
-      font-size: 12px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s ease-in-out;
+    .toggle-btn,.theme-btn,.custom-select__button {
+      padding:8px 12px; font-size:14px; border:2px solid var(--cs-border,#000);
+      border-radius:6px; background:var(--cs-bg,#fff); color:var(--cs-fg,#000); cursor:pointer;
     }
-    .toast.show { opacity: 0.9; }
+    .copy-btn { padding:6px 10px; font-size:12px; border:1.5px solid var(--cs-border,#000); border-radius:6px; background:var(--cs-bg,#fff); color:var(--cs-fg,#000); cursor:pointer; }
+    .copy-btn:disabled { opacity:.6; cursor:not-allowed; }
 
-    /* Serial number column */
-    #snHeader, .snCol { text-align: center; width: 56px; }
+    .custom-select { position:relative; display:inline-block; }
+    .custom-select__button { min-width:220px; text-align:left; }
+    .custom-select__button::after { content:""; float:right; margin-top:6px; border:6px solid transparent; border-top-color:currentColor; }
+    .custom-select__list { position:absolute; z-index:10; top:calc(100% + 6px); left:0; right:0; max-height:240px; overflow:auto; list-style:none; margin:0; padding:6px; border:2px solid var(--cs-border,#000); border-radius:8px; background:var(--cs-bg,#fff); box-shadow:0 6px 14px rgba(0,0,0,.18); display:none; }
+    .custom-select__list[aria-hidden="false"] { display:block; }
+    .custom-select__list li { padding:8px 10px; border-radius:6px; font-size:14px; cursor:pointer; }
+    .custom-select__list li:hover, .custom-select__list li[aria-selected="true"], .custom-select__list li:focus { background:rgba(0,120,212,.12); outline:none; }
 
-    /* Theme: Light (default) */
-    body.light { background: #fff; color: #000; }
-    body.light header { background: #fff; color: #000; }
-    body.light th { background: #f5f5f5; color: #000; }
-    body.light tr:nth-child(even) { background: #fafafa; }
+    body.light { --cs-bg:#fff; --cs-fg:#000; --cs-border:#000; background:#fff; color:#000; }
+    body.dark  { --cs-bg:#2c2c2c; --cs-fg:#fff; --cs-border:#bbb; background:#121212; color:#f5f5f5; }
+    body.blue  { --cs-bg:#fff; --cs-fg:#003366; --cs-border:#003366; background:#e6f0ff; color:#003366; }
 
-    /* Theme: Dark */
-    body.dark { background: #121212; color: #f5f5f5; }
-    body.dark header { background: #1f1f1f; color: #f5f5f5; }
-    body.dark th { background: #1f1f1f; color: #f5f5f5; }
-    body.dark tr:nth-child(even) { background: #1a1a1a; }
+    /* Description column toggle */
+    #subjectTable.desc-hidden th:nth-child(3), #subjectTable.desc-hidden td:nth-child(3) { display:none; }
+    #descHeader, .descCol { width:320px; }
 
-    /* Theme: Blue (corporate) */
-    body.blue { background: #e6f0ff; color: #003366; }
-    body.blue header { background: #003366; color: #fff; }
-    body.blue th { background: #003366; color: #fff; }
-    body.blue tr:nth-child(even) { background: #f0f8ff; }
+    /* MVTD panel */
+    .mvtd-panel { margin-top:12px; padding:12px 14px; border:2px solid var(--cs-border,#000); border-radius:8px; background:var(--cs-bg,#fff); color:var(--cs-fg,#000); }
+    .mvtd-row { display:grid; grid-template-columns:1fr; gap:8px; }
+    .mvtd-row label { font-weight:600; }
+    .mvtd-input { width:100%; padding:8px; border:2px solid var(--cs-border,#000); border-radius:6px; background:var(--cs-bg,#fff); color:var(--cs-fg,#000); }
+    .mvtd-result { margin-top:12px; }
+    .mvtd-actions { display:flex; gap:8px; margin-top:8px; }
 
-    /* Theme switch animation (optional) */
-    @keyframes rowFade {
-      from { opacity: 0; transform: translateY(4px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes headerPulse {
-      from { opacity: 0.7; }
-      to   { opacity: 1; }
-    }
-    .theme-switch-anim thead, .theme-switch-anim tr { animation: rowFade 0.35s ease; }
-    header.theme-switch-anim { animation: headerPulse 0.35s ease; }
-
-    /* --- Unified control styling (buttons & custom language control) --- */
-    .toggle-btn,
-    .theme-btn,
-    .custom-select__button {
-      padding: 8px 12px;
-      font-size: 14px;
-      border: 2px solid var(--cs-border, #000);
-      border-radius: 6px;
-      background: var(--cs-bg, #fff);
-      color: var(--cs-fg, #000);
-      cursor: pointer;
-      transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-    }
-    .toggle-btn:focus,
-    .theme-btn:focus,
-    .custom-select__button:focus {
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(0,120,212,0.3);
-      border-color: #0078d4;
-    }
-
-    /* Copy button (compact for table) */
-    .copy-btn {
-      padding: 6px 10px;
-      font-size: 12px;
-      border: 1.5px solid var(--cs-border, #000);
-      border-radius: 6px;
-      background: var(--cs-bg, #fff);
-      color: var(--cs-fg, #000);
-      cursor: pointer;
-      transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-    }
-    .copy-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-
-    /* --- Custom select (Language) --- */
-    .custom-select { position: relative; display: inline-block; }
-    .custom-select__button { min-width: 220px; text-align: left; }
-    .custom-select__button::after {
-      content: "";
-      float: right;
-      margin-top: 6px;
-      border: 6px solid transparent;
-      border-top-color: currentColor;
-    }
-    .custom-select__list {
-      position: absolute;
-      z-index: 10;
-      top: calc(100% + 6px);
-      left: 0;
-      right: 0;
-      max-height: 240px;
-      overflow: auto;
-      list-style: none;
-      margin: 0;
-      padding: 6px;
-      border: 2px solid var(--cs-border, #000);
-      border-radius: 8px;
-      background: var(--cs-bg, #fff);
-      box-shadow: 0 6px 14px rgba(0,0,0,0.18);
-      display: none;
-    }
-    .custom-select__list[aria-hidden="false"] { display: block; animation: rowFade 0.2s ease; }
-    .custom-select__list li {
-      padding: 8px 10px;
-      border-radius: 6px;
-      font-size: 14px;
-      color: var(--cs-fg, #000);
-      background: transparent;
-      cursor: pointer;
-    }
-    .custom-select__list li:hover,
-    .custom-select__list li[aria-selected="true"],
-    .custom-select__list li:focus {
-      background: rgba(0,120,212,0.12);
-      outline: none;
-    }
-
-    /* Theme variables */
-    body.light { --cs-bg: #fff; --cs-fg: #000; --cs-border: #000; }
-    body.dark  { --cs-bg: #2c2c2c; --cs-fg: #fff; --cs-border: #bbb; }
-    body.blue  { --cs-bg: #fff; --cs-fg: #003366; --cs-border: #003366; }
-
-    /* ---- Theme-aware note ---- */
-    .note {
-      margin-top: 24px;
-      padding: 12px 14px;
-      border: 2px solid var(--cs-border, #000);
-      border-radius: 8px;
-      background: var(--cs-bg, #fff);
-      color: var(--cs-fg, #000);
-      transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
-    }
-    .note__title { font-weight: 700; margin-bottom: 6px; }
-    .note__list { margin: 8px 0 0; padding-left: 20px; }
-    .note__list li { line-height: 1.5; }
-
-    /* ---- Theme-aware MVTD panel ---- */
-    .mvtd-panel {
-      margin-top: 12px;
-      padding: 12px 14px;
-      border: 2px solid var(--cs-border, #000);
-      border-radius: 8px;
-      background: var(--cs-bg, #fff);
-      color: var(--cs-fg, #000);
-    }
-    .mvtd-row { display: grid; grid-template-columns: 1fr; gap: 8px; }
-    .mvtd-row label { font-weight: 600; }
-    .mvtd-input {
-      width: 100%; padding: 8px;
-      border: 2px solid var(--cs-border, #000);
-      border-radius: 6px;
-      background: var(--cs-bg, #fff); color: var(--cs-fg, #000);
-    }
-    .mvtd-result { margin-top: 12px; }
-    .mvtd-actions { display: flex; gap: 8px; margin-top: 8px; }
-
-    /* ---- Description column toggle (hide/show) ---- */
-    /* Table has columns: 1 #, 2 Subject in EMC, 3 Description in EMC, 4 Localized Subject Line, 5 Copy */
-    #subjectTable.desc-hidden th:nth-child(3),
-    #subjectTable.desc-hidden td:nth-child(3) {
-      display: none;
-    }
-
-    /* Optional width for Description column */
-    #descHeader, .descCol { width: 320px; }
+    .toast { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:#000; color:#fff; padding:8px 12px; border-radius:4px; font-size:12px; opacity:0; pointer-events:none; transition:opacity .2s; }
+    .toast.show { opacity:.9; }
   </style>
 </head>
 
@@ -225,34 +62,14 @@
   <main>
     <div class="controls">
       <label for="langButton">Language:</label>
-
-      <!-- Custom Select ONLY -->
       <div class="custom-select" id="langSelectRoot">
-        <button
-          id="langButton"
-          type="button"
-          class="custom-select__button"
-          aria-haspopup="listbox"
-          aria-expanded="false"
-          aria-labelledby="langButton"
-        >
-          EN
-        </button>
-        <ul id="langList" class="custom-select__list" role="listbox" tabindex="-1" aria-labelledby="langButton" aria-hidden="true"></ul>
+        <button id="langButton" type="button" class="custom-select__button" aria-haspopup="listbox" aria-expanded="false">EN</button>
+        <ul id="langList" class="custom-select__list" role="listbox" aria-hidden="true"></ul>
       </div>
 
-      <!-- Include/Exclude On-Demand toggle -->
-      <button id="onDemandBtn" type="button" class="toggle-btn" aria-pressed="false" title="Include/Exclude the On‑Demand Registration Confirmation row">
-        Include On‑Demand
-      </button>
-
-      <!-- Theme toggle -->
+      <button id="onDemandBtn" type="button" class="toggle-btn" aria-pressed="false">Include On‑Demand</button>
       <button id="themeBtn" type="button" class="theme-btn">Theme: Light</button>
-
-      <!-- NEW: Description column show/hide toggle -->
-      <button id="descToggleBtn" type="button" class="toggle-btn" aria-pressed="true" title="Hide/Show Description in EMC column">
-        Show Description (ON)
-      </button>
+      <button id="descToggleBtn" type="button" class="toggle-btn" aria-pressed="true">Show Description (ON)</button>
     </div>
 
     <div class="lang-label" id="langLabel"></div>
@@ -270,7 +87,6 @@
       <tbody></tbody>
     </table>
 
-    <!-- Theme-aware note -->
     <section class="note" aria-label="Legend and upcoming items">
       <div class="note__title">Note</div>
       <ul class="note__list">
@@ -280,29 +96,21 @@
       </ul>
     </section>
 
-    <!-- === MVTD Lookup (Integrated) === -->
+    <!-- MVTD (separate module) -->
     <section aria-label="MVTD Lookup" style="margin-top:24px;">
       <button id="mvtdBtn" type="button" class="toggle-btn" aria-expanded="false">MVTD Lookup</button>
 
       <div id="mvtdForm" class="mvtd-panel" style="display:none;" aria-hidden="true">
         <div class="mvtd-row">
           <label for="mvtdEvent">Event Sub Type</label>
-          <select id="mvtdEvent" class="mvtd-input" aria-describedby="mvtdEventHint">
-            <option value="">Select...</option>
-            <!-- options populated by JS -->
-          </select>
-          <small id="mvtdEventHint">Pick from MVTD scope (currently supported where primary language is English).</small>
+          <select id="mvtdEvent" class="mvtd-input" aria-describedby="mvtdEventHint"></select>
+          <small id="mvtdEventHint">Headings separate FY25 and FY26 (FY26 supports English primary language only).</small>
 
           <label for="mvtdLang">Language</label>
-          <select id="mvtdLang" class="mvtd-input">
-            <option value="EN-US">EN-US</option>
-          </select>
+          <select id="mvtdLang" class="mvtd-input"></select>
 
           <label for="mvtdDay">Day Format</label>
-          <select id="mvtdDay" class="mvtd-input">
-            <option value="1 Day">1 Day</option>
-            <option value="2 Day">2 Day</option>
-          </select>
+          <select id="mvtdDay" class="mvtd-input"></select>
         </div>
 
         <div class="mvtd-actions">
@@ -311,6 +119,8 @@
         </div>
 
         <div id="mvtdResult" class="mvtd-result note" role="status" aria-live="polite" style="display:none;">
+          <div><strong>Scope:</strong> <span id="mvtdScopeOut"></span></div>
+          <div><strong>Launch Date:</strong> <span id="mvtdLaunchOut"></span></div>
           <div><strong>Subject Line:</strong> <span id="mvtdSubjectOut"></span></div>
           <div><strong>Friendly Name:</strong> <span id="mvtdFriendlyOut"></span></div>
           <div class="mvtd-actions">
@@ -320,15 +130,13 @@
         </div>
       </div>
     </section>
-    <!-- === End MVTD === -->
-
   </main>
 
-  <!-- Toast -->
+  <!-- FIXED: closed properly -->
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script>
-    /* ===== Embedded data (mechanical fixes applied previously) ===== */
+    /* ===== Localization (unchanged) ===== */
     const DATA = {
       "EN": {
         "Registration confirmation": "Microsoft Event Registration Confirmation",
@@ -355,7 +163,7 @@
         "Registration Pending": "Microsoft Event Registration Pending",
         "Apology Pre-resolution/Event Agenda Update Email": "Sorry, we experienced an issue with your event",
         "Microsoft Event On-Demand Registration Confirmation": "Microsoft Event On-Demand Registration Confirmation"
-      },
+          },
       "AR-SA": {
         "Registration confirmation": "تأكيد تسـجيل الأحداث من Microsoft",
         "Waitlist confirmation": "تسـجيل الأحداث من Microsoft معلّق",
@@ -825,8 +633,7 @@
         "Microsoft Event On-Demand Registration Confirmation": "Microsoft 活動隨選點播登記確認"
       }
     };
-
-    /* === Description strings aligned to ORDER keys === */
+ /* === Description strings aligned to ORDER keys === */
     const DESCRIPTIONS_IN_EMC = {
       "Registration confirmation": "RegistrationConfirmation email for event",
       "Waitlist confirmation": "WaitlistConfirmation email for event",
@@ -841,7 +648,6 @@
       "Microsoft Event On-Demand Registration Confirmation": "RegistrationOnDemandConfirmation email for event"
     };
 
-    /* Constants */
     const ONDEMAND_KEY = "Microsoft Event On-Demand Registration Confirmation";
     const ORDER = [
       "Registration confirmation",
@@ -857,463 +663,547 @@
       "Microsoft Event On-Demand Registration Confirmation"
     ];
 
-    /* Prefs keys */
     const LS_KEYS = {
-      theme: 'sl_theme',
-      lang: 'sl_lang',
-      includeOD: 'sl_include_od',
-      showDesc: 'sl_show_desc',
-      mvtdEvent: 'mvtd_event',
-      mvtdLang: 'mvtd_lang',
-      mvtdDay: 'mvtd_day'
+      theme: 'sl_theme', lang: 'sl_lang', includeOD: 'sl_include_od', showDesc: 'sl_show_desc',
+      mvtdEvent: 'mvtd_event', mvtdLang: 'mvtd_lang', mvtdDay: 'mvtd_day'
     };
-    const RTL_LANGS = ['AR-SA', 'HE-IL'];
+    const RTL_LANGS = ['AR-SA','HE-IL'];
 
-    /* Toast helper */
-    function announce(message) {
-      const toast = document.getElementById('toast');
-      toast.textContent = message;
-      toast.classList.add('show');
-      clearTimeout(announce._t);
-      announce._t = setTimeout(() => toast.classList.remove('show'), 1200);
-    }
+    function announce(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(announce._t);announce._t=setTimeout(()=>t.classList.remove('show'),1200);}
+    function copyTextFallback(text){const ta=document.createElement('textarea');ta.value=text;ta.setAttribute('readonly','');ta.style.position='fixed';ta.style.opacity='0';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);announce('Copied');}
+    async function copyText(txt){const clean=(txt||'').toString().trim();if(!clean){announce('Nothing to copy');return;}try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(clean);announce('Copied');}else{copyTextFallback(clean);}}catch{copyTextFallback(clean);}}
 
-    /* Copy helpers */
-    function copyTextFallback(text) {
-      const clean = (text || '').toString().trim();
-      if (!clean) { announce('Nothing to copy'); return; }
-      try {
-        const ta = document.createElement('textarea');
-        ta.value = clean;
-        ta.setAttribute('readonly', '');
-        ta.style.position = 'fixed';
-        ta.style.opacity = '0';
-        ta.style.left = '-9999px';
-        document.body.appendChild(ta);
-        ta.select();
-        const ok = document.execCommand('copy');
-        document.body.removeChild(ta);
-        announce(ok ? 'Copied' : 'Copy failed');
-      } catch {
-        announce('Copy failed');
-      }
-    }
-    async function copyText(text) {
-      const clean = (text || '').toString().trim();
-      if (!clean) { announce('Nothing to copy'); return; }
-      try {
-        if (navigator.clipboard?.writeText) {
-          await navigator.clipboard.writeText(clean);
-          announce('Copied');
-        } else {
-          copyTextFallback(clean);
-        }
-      } catch {
-        copyTextFallback(clean);
-      }
-    }
+    const langButton=document.getElementById('langButton');
+    const langList=document.getElementById('langList');
+    const langSelectRoot=document.getElementById('langSelectRoot');
 
-    /* ===== Custom Select: single source of truth for language ===== */
-    const langButton = document.getElementById('langButton');
-    const langList = document.getElementById('langList');
-    const langSelectRoot = document.getElementById('langSelectRoot');
+    let currentLang='EN';
+    const themes=['light','dark','blue']; let currentThemeIndex=0;
+    let includeOnDemand=false; let showDescription=true;
 
-    // Current language & theme state (drives rendering)
-    let currentLang = 'EN';
-    const themes = ['light', 'dark', 'blue'];
-    let currentThemeIndex = 0;
-
-    // On‑Demand toggle state
-    let includeOnDemand = false;
-
-    // Description column visibility
-    let showDescription = true;
-
-    // Populate custom select from DATA keys
-    function buildLanguageList() {
-      langList.innerHTML = '';
-      const frag = document.createDocumentFragment();
-      Object.keys(DATA).forEach((code) => {
-        const li = document.createElement('li');
-        li.setAttribute('role', 'option');
-        li.setAttribute('tabindex', '-1');
-        li.textContent = code;
-        li.dataset.value = code;
-        if (code === currentLang) li.setAttribute('aria-selected', 'true');
-        li.addEventListener('click', () => { selectLanguage(code); closeLangList(); });
-        li.addEventListener('keydown', (e) => { if (e.key === 'Enter') { selectLanguage(code); closeLangList(); } });
+    function buildLanguageList(){
+      langList.innerHTML=''; const frag=document.createDocumentFragment();
+      Object.keys(DATA).forEach(code=>{
+        const li=document.createElement('li'); li.setAttribute('role','option'); li.setAttribute('tabindex','-1'); li.textContent=code; li.dataset.value=code;
+        if(code===currentLang) li.setAttribute('aria-selected','true');
+        li.addEventListener('click',()=>{selectLanguage(code);closeLangList();});
+        li.addEventListener('keydown',(e)=>{if(e.key==='Enter'){selectLanguage(code);closeLangList();}});
         frag.appendChild(li);
       });
       langList.appendChild(frag);
     }
+    function openLangList(){langList.setAttribute('aria-hidden','false');langButton.setAttribute('aria-expanded','true');(langList.querySelector('[aria-selected="true"]')||langList.querySelector('li'))?.focus();document.addEventListener('click',onDocClickCloseLang,{once:true});}
+    function closeLangList(){langList.setAttribute('aria-hidden','true');langButton.setAttribute('aria-expanded','false');langButton.focus();}
+    function onDocClickCloseLang(e){if(!langSelectRoot.contains(e.target)) closeLangList();}
 
-    function openLangList() {
-      langList.setAttribute('aria-hidden', 'false');
-      langButton.setAttribute('aria-expanded', 'true');
-      const selected = langList.querySelector('[aria-selected="true"]') || langList.querySelector('li');
-      selected && selected.focus();
-      document.addEventListener('click', onDocClickCloseLang, { once: true });
+    langButton.addEventListener('click',()=>{const ex=langButton.getAttribute('aria-expanded')==='true';ex?closeLangList():openLangList();});
+    langButton.addEventListener('keydown',(e)=>{if(['ArrowDown','Enter',' '].includes(e.key)){e.preventDefault();openLangList();}});
+    langList.addEventListener('keydown',(e)=>{if(e.key==='Escape'){e.preventDefault();closeLangList();}});
+
+    const onDemandBtn=document.getElementById('onDemandBtn');
+    onDemandBtn.addEventListener('click',()=>{includeOnDemand=!includeOnDemand;onDemandBtn.setAttribute('aria-pressed',String(includeOnDemand));onDemandBtn.textContent=includeOnDemand?'Include On‑Demand (ON)':'Include On‑Demand';savePrefs();renderTable();});
+
+    const themeBtn=document.getElementById('themeBtn');
+    themeBtn.addEventListener('click',()=>{currentThemeIndex=(currentThemeIndex+1)%themes.length;const t=themes[currentThemeIndex];document.body.className=t;themeBtn.textContent=`Theme: ${t[0].toUpperCase()+t.slice(1)}`;savePrefs();});
+
+    const descToggleBtn=document.getElementById('descToggleBtn');
+    function applyDescVisibility(){const tbl=document.getElementById('subjectTable');if(showDescription){tbl.classList.remove('desc-hidden');descToggleBtn.textContent='Show Description (ON)';descToggleBtn.setAttribute('aria-pressed','true');}else{tbl.classList.add('desc-hidden');descToggleBtn.textContent='Show Description (OFF)';descToggleBtn.setAttribute('aria-pressed','false');}}
+    descToggleBtn.addEventListener('click',()=>{showDescription=!showDescription;applyDescVisibility();savePrefs();});
+
+    function loadPrefs(){
+      const savedTheme=localStorage.getItem(LS_KEYS.theme);
+      const savedLang=localStorage.getItem(LS_KEYS.lang);
+      const savedOD=localStorage.getItem(LS_KEYS.includeOD);
+      const savedDesc=localStorage.getItem(LS_KEYS.showDesc);
+
+      if(savedTheme&&['light','dark','blue'].includes(savedTheme)){document.body.className=savedTheme;themeBtn.textContent=`Theme: ${savedTheme[0].toUpperCase()+savedTheme.slice(1)}`;currentThemeIndex=['light','dark','blue'].indexOf(savedTheme);}
+      if(savedLang&&DATA[savedLang]){currentLang=savedLang;langButton.textContent=savedLang;}
+      includeOnDemand=savedOD==='true'; onDemandBtn.setAttribute('aria-pressed',String(includeOnDemand)); onDemandBtn.textContent=includeOnDemand?'Include On‑Demand (ON)':'Include On‑Demand';
+      showDescription=savedDesc!=='false'; applyDescVisibility();
     }
-    function closeLangList() {
-      langList.setAttribute('aria-hidden', 'true');
-      langButton.setAttribute('aria-expanded', 'false');
-      langButton.focus();
+    function savePrefs(){
+      localStorage.setItem(LS_KEYS.theme,document.body.className||'light');
+      localStorage.setItem(LS_KEYS.lang,currentLang||'EN');
+      localStorage.setItem(LS_KEYS.includeOD,String(includeOnDemand));
+      localStorage.setItem(LS_KEYS.showDesc,String(showDescription));
     }
-    function onDocClickCloseLang(e) { if (!langSelectRoot.contains(e.target)) closeLangList(); }
+    function applyDirForLang(code){document.body.setAttribute('dir', RTL_LANGS.includes(code)?'rtl':'ltr');}
 
-    function focusNextLang(delta) {
-      const items = Array.from(langList.querySelectorAll('li'));
-      const current = document.activeElement;
-      const idx = Math.max(0, items.indexOf(current));
-      const nextIdx = Math.min(items.length - 1, Math.max(0, idx + delta));
-      items[nextIdx].focus();
-    }
+    function renderTable(){
+      const selectedLang=currentLang||'EN';
+      document.getElementById('langLabel').textContent=`Language: ${selectedLang}`;
+      const enSubjects=DATA['EN']; const locSubjects=DATA[selectedLang];
+      const tbody=document.querySelector('#subjectTable tbody'); tbody.innerHTML='';
 
-    // Button and list keyboard handlers
-    langButton.addEventListener('click', () => {
-      const expanded = langButton.getAttribute('aria-expanded') === 'true';
-      expanded ? closeLangList() : openLangList();
-    });
-    langButton.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLangList(); }
-    });
-    langList.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { e.preventDefault(); closeLangList(); }
-      if (e.key === 'ArrowDown') { e.preventDefault(); focusNextLang(1); }
-      if (e.key === 'ArrowUp') { e.preventDefault(); focusNextLang(-1); }
-      if (e.key === 'Home') { e.preventDefault(); langList.querySelector('li')?.focus(); }
-      if (e.key === 'End') { e.preventDefault(); langList.querySelector('li:last-child')?.focus(); }
-    });
-
-    /* Include/Exclude On‑Demand toggle */
-    const onDemandBtn = document.getElementById('onDemandBtn');
-    onDemandBtn.addEventListener('click', () => {
-      includeOnDemand = !includeOnDemand;
-      onDemandBtn.setAttribute('aria-pressed', String(includeOnDemand));
-      onDemandBtn.textContent = includeOnDemand ? 'Include On‑Demand (ON)' : 'Include On‑Demand';
-      savePrefs();
-      renderTable();
-    });
-
-    /* Theme toggle */
-    const themeBtn = document.getElementById('themeBtn');
-    themeBtn.addEventListener('click', () => {
-      currentThemeIndex = (currentThemeIndex + 1) % themes.length;
-      const newTheme = themes[currentThemeIndex];
-      document.body.className = newTheme;
-      themeBtn.textContent = `Theme: ${newTheme.charAt(0).toUpperCase() + newTheme.slice(1)}`;
-
-      // Optional: subtle animation
-      const headerEl = document.querySelector('header');
-      const tableEl = document.getElementById('subjectTable');
-      const noteEl = document.querySelector('.note');
-      headerEl.classList.add('theme-switch-anim');
-      tableEl.classList.add('theme-switch-anim');
-      if (noteEl) noteEl.classList.add('theme-switch-anim');
-
-      setTimeout(() => {
-        headerEl.classList.remove('theme-switch-anim');
-        tableEl.classList.remove('theme-switch-anim');
-        if (noteEl) noteEl.classList.remove('theme-switch-anim');
-      }, 400);
-
-      savePrefs();
-    });
-
-    /* Description column toggle */
-    const descToggleBtn = document.getElementById('descToggleBtn');
-    function applyDescVisibility() {
-      const tbl = document.getElementById('subjectTable');
-      if (showDescription) {
-        tbl.classList.remove('desc-hidden');
-        descToggleBtn.textContent = 'Show Description (ON)';
-        descToggleBtn.setAttribute('aria-pressed', 'true');
-      } else {
-        tbl.classList.add('desc-hidden');
-        descToggleBtn.textContent = 'Show Description (OFF)';
-        descToggleBtn.setAttribute('aria-pressed', 'false');
-      }
-    }
-    descToggleBtn.addEventListener('click', () => {
-      showDescription = !showDescription;
-      applyDescVisibility();
-      savePrefs();
-    });
-
-    /* Persistence */
-    function loadPrefs() {
-      const savedTheme = localStorage.getItem(LS_KEYS.theme);
-      const savedLang = localStorage.getItem(LS_KEYS.lang);
-      const savedOD = localStorage.getItem(LS_KEYS.includeOD);
-      const savedDesc = localStorage.getItem(LS_KEYS.showDesc);
-
-      // Theme
-      if (savedTheme && ['light', 'dark', 'blue'].includes(savedTheme)) {
-        document.body.className = savedTheme;
-        themeBtn.textContent = `Theme: ${savedTheme.charAt(0).toUpperCase() + savedTheme.slice(1)}`;
-        currentThemeIndex = ['light', 'dark', 'blue'].indexOf(savedTheme);
-      }
-
-      // Language
-      if (savedLang && DATA[savedLang]) {
-        currentLang = savedLang;
-        langButton.textContent = savedLang;
-      }
-
-      // On‑Demand
-      includeOnDemand = savedOD === 'true';
-      onDemandBtn.setAttribute('aria-pressed', String(includeOnDemand));
-      onDemandBtn.textContent = includeOnDemand ? 'Include On‑Demand (ON)' : 'Include On‑Demand';
-
-      // Description column visibility
-      showDescription = savedDesc !== 'false'; // default true
-      applyDescVisibility();
-
-      applyDirForLang(currentLang);
-
-      // Load MVTD selections
-      const mvtdEventSaved = localStorage.getItem(LS_KEYS.mvtdEvent);
-      const mvtdLangSaved  = localStorage.getItem(LS_KEYS.mvtdLang);
-      const mvtdDaySaved   = localStorage.getItem(LS_KEYS.mvtdDay);
-      if (mvtdEventSaved) document.getElementById('mvtdEvent').value = mvtdEventSaved;
-      if (mvtdLangSaved)  document.getElementById('mvtdLang').value  = mvtdLangSaved;
-      if (mvtdDaySaved)   document.getElementById('mvtdDay').value   = mvtdDaySaved;
-    }
-
-    function savePrefs() {
-      localStorage.setItem(LS_KEYS.theme, document.body.className || 'light');
-      localStorage.setItem(LS_KEYS.lang, currentLang || 'EN');
-      localStorage.setItem(LS_KEYS.includeOD, String(includeOnDemand));
-      localStorage.setItem(LS_KEYS.showDesc, String(showDescription));
-      // MVTD selections
-      localStorage.setItem(LS_KEYS.mvtdEvent, document.getElementById('mvtdEvent').value || '');
-      localStorage.setItem(LS_KEYS.mvtdLang,  document.getElementById('mvtdLang').value || 'EN-US');
-      localStorage.setItem(LS_KEYS.mvtdDay,   document.getElementById('mvtdDay').value || '');
-    }
-
-    function applyDirForLang(code) {
-      document.body.setAttribute('dir', RTL_LANGS.includes(code) ? 'rtl' : 'ltr');
-    }
-
-    /* Render table using currentLang */
-    function renderTable() {
-      const selectedLang = currentLang || 'EN';
-      document.getElementById('langLabel').textContent = `Language: ${selectedLang}`;
-
-      const enSubjects = DATA['EN'];
-      const locSubjects = DATA[selectedLang];
-      const tbody = document.getElementById('subjectTable').querySelector('tbody');
-      tbody.innerHTML = '';
-
-      // Keys honoring On‑Demand toggle
-      const keys = ORDER.filter(k => includeOnDemand ? true : k !== ONDEMAND_KEY);
-
-      keys.forEach((key, idx) => {
-        const tr = document.createElement('tr');
-
-        // Serial #
-        const tdSn = document.createElement('td');
-        tdSn.textContent = String(idx + 1);
-        tdSn.className = 'snCol';
-        tr.appendChild(tdSn);
-
-        // Subject in EMC (EN)
-        const tdEn = document.createElement('td');
-        tdEn.textContent = enSubjects[key] || '';
-        tdEn.className = 'enCol';
-        tr.appendChild(tdEn);
-
-        // NEW: Description in EMC (middle column)
-        const tdDesc = document.createElement('td');
-        tdDesc.textContent = DESCRIPTIONS_IN_EMC[key] || '';
-        tdDesc.className = 'descCol';
-        tr.appendChild(tdDesc);
-
-        // Localized Subject Line
-        const tdLoc = document.createElement('td');
-        const localizedText = (locSubjects && key in locSubjects) ? (locSubjects[key] || '') : '';
-        tdLoc.textContent = localizedText;
-        tr.appendChild(tdLoc);
-
-        // Copy button (localized)
-        const tdCopy = document.createElement('td');
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'copy-btn';
-        btn.textContent = 'Copy';
-        btn.setAttribute('aria-label', `Copy localized text for "${key}"`);
-        btn.disabled = !localizedText || !localizedText.toString().trim();
-        btn.addEventListener('click', () => copyText(localizedText));
-        tdCopy.appendChild(btn);
-        tr.appendChild(tdCopy);
-
+      const keys=ORDER.filter(k=>includeOnDemand?true:k!==ONDEMAND_KEY);
+      keys.forEach((key,idx)=>{
+        const tr=document.createElement('tr');
+        const localizedText=(locSubjects && key in locSubjects) ? (locSubjects[key]||'') : '';
+        tr.innerHTML = `
+          <td class="snCol">${idx+1}</td>
+          <td class="enCol">${enSubjects[key]||''}</td>
+          <td class="descCol">${DESCRIPTIONS_IN_EMC[key]||''}</td>
+          <td>${localizedText}</td>
+          <td><button class="copy-btn" ${!localizedText.trim()?'disabled':''}>Copy</button></td>
+        `;
+        tr.querySelector('button')?.addEventListener('click',()=>copyText(localizedText));
         tbody.appendChild(tr);
       });
-
-      // Apply current desc visibility after re-render
       applyDescVisibility();
+      applyDirForLang(selectedLang);
     }
 
-    /* Language select */
-    function selectLanguage(val) {
-      currentLang = val;
-      langButton.textContent = val;
-      // update selected visual state
-      langList.querySelectorAll('li').forEach(li => {
-        li.setAttribute('aria-selected', String(li.dataset.value === val));
-      });
-      applyDirForLang(val);
-      renderTable();
-      savePrefs();
+    function selectLanguage(val){
+      currentLang=val; langButton.textContent=val;
+      langList.querySelectorAll('li').forEach(li=>li.setAttribute('aria-selected', String(li.dataset.value===val)));
+      renderTable(); savePrefs();
     }
 
-    /* ===== MVTD dataset (scope as provided) ===== */
-    const MVTD_DATA = [
-      {
-        eventSubType: "Microsoft Virtual Training Day: Develop Generative AI Apps with Azure AI Foundry",
-        language: "EN-US",
-        dayFormat: "2 Day",
-        subjectLine: "Thanks for joining Develop Generative AI Apps with Azure AI Foundry",
-        friendlyName: "Microsoft Virtual Training Day: Develop Generative AI Apps with Azure AI Foundry"
-      },
-      {
-        eventSubType: "Microsoft Virtual Training Day: Build Agents & Solutions with Azure AI Foundry",
-        language: "EN-US",
-        dayFormat: "1 Day",
-        subjectLine: "Thanks for joining Build Agents & Solutions with Azure AI Foundry",
-        friendlyName: "Microsoft Virtual Training Day: Build Agents & Solutions with Azure AI Foundry"
-      },
-      {
-        eventSubType: "Microsoft Virtual Training Day: Secure and Automate Microsoft 365 Copilot Agents",
-        language: "EN-US",
-        dayFormat: "1 Day",
-        subjectLine: "Thanks for joining Secure and Automate Microsoft 365 Copilot Agents",
-        friendlyName: "Microsoft Virtual Training Day: Secure and Automate Microsoft 365 Copilot Agents"
-      },
-      {
-        eventSubType: "Microsoft Virtual Training Day: Agents for Everyday Business Processes with Agents",
-        language: "EN-US",
-        dayFormat: "1 Day",
-        subjectLine: "Thanks for joining Agents for Everyday Business Processes with Agents",
-        friendlyName: "Microsoft Virtual Training Day: Agents for Everyday Business Processes with Agents"
-      },
-      {
-        eventSubType: "Microsoft Virtual Training Day: Crack Agents in Microsoft Copilot Studio",
-        language: "EN-US",
-        dayFormat: "2 Day",
-        subjectLine: "Thanks for joining Crack Agents in Microsoft Copilot Studio",
-        friendlyName: "Microsoft Virtual Training Day: Crack Agents in Microsoft Copilot Studio"
-      },
-      {
-        eventSubType: "Microsoft Virtual Training Day: Protect and Mitigate Cybersecurity Threats",
-        language: "EN-US",
-        dayFormat: "2 Day",
-        subjectLine: "Thanks for joining Protect and Mitigate Cybersecurity Threats",
-        friendlyName: "Microsoft Virtual Training Day: Protect and Mitigate Cybersecurity Threats"
-      },
-      {
-        eventSubType: "Microsoft Virtual Training Day: Introduction to Microsoft 365 Copilot and Agents",
-        language: "EN-US",
-        dayFormat: "1 Day",
-        subjectLine: "Thanks for joining Introduction to Microsoft 365 Copilot and Agents",
-        friendlyName: "Microsoft Virtual Training Day: Introduction to Microsoft 365 Copilot and Agents"
-      },
-      {
-        eventSubType: "Microsoft Virtual Training Day: Introduction to Microsoft Power Platform",
-        language: "EN-US",
-        dayFormat: "2 Day",
-        subjectLine: "Thanks for joining Introduction to Microsoft Power Platform",
-        friendlyName: "Microsoft Virtual Training Day: Introduction to Microsoft Power Platform"
-      }
-    ];
-
-    /* ===== MVTD UI logic ===== */
-    const mvtdBtn          = document.getElementById('mvtdBtn');
-    const mvtdForm         = document.getElementById('mvtdForm');
-    const mvtdEventSelect  = document.getElementById('mvtdEvent');
-    const mvtdLangSelect   = document.getElementById('mvtdLang');
-    const mvtdDaySelect    = document.getElementById('mvtdDay');
-    const mvtdSubmit       = document.getElementById('mvtdSubmit');
-    const mvtdReset        = document.getElementById('mvtdReset');
-    const mvtdResultBlock  = document.getElementById('mvtdResult');
-    const mvtdSubjectOut   = document.getElementById('mvtdSubjectOut');
-    const mvtdFriendlyOut  = document.getElementById('mvtdFriendlyOut');
-    const mvtdCopySubject  = document.getElementById('mvtdCopySubject');
-    const mvtdCopyFriendly = document.getElementById('mvtdCopyFriendly');
-
-    // Populate Event Sub Type dropdown (unique list)
-    function populateMvtdEventOptions() {
-      const seen = new Set();
-      MVTD_DATA.forEach(item => {
-        if (seen.has(item.eventSubType)) return;
-        const opt = document.createElement('option');
-        opt.value = item.eventSubType;
-        opt.textContent = item.eventSubType;
-        mvtdEventSelect.appendChild(opt);
-        seen.add(item.eventSubType);
-      });
-    }
-
-    // Toggle MVTD panel visibility
-    mvtdBtn.addEventListener('click', () => {
-      const isHidden = mvtdForm.style.display === 'none' || mvtdForm.style.display === '';
-      mvtdForm.style.display = isHidden ? 'block' : 'none';
-      mvtdForm.setAttribute('aria-hidden', String(!isHidden));
-      mvtdBtn.setAttribute('aria-expanded', String(isHidden));
-    });
-
-    // Submit: find match and show results
-    mvtdSubmit.addEventListener('click', () => {
-      const eventType = mvtdEventSelect.value;
-      const lang      = mvtdLangSelect.value;
-      const day       = mvtdDaySelect.value;
-
-      if (!eventType || !lang || !day) {
-        announce('Please select Event, Language, and Day Format');
-        return;
-      }
-
-      const match = MVTD_DATA.find(item =>
-        item.eventSubType === eventType &&
-        item.language === lang &&
-        item.dayFormat === day
-      );
-
-      savePrefs(); // persist selections
-
-      if (match) {
-        mvtdSubjectOut.textContent  = match.subjectLine;
-        mvtdFriendlyOut.textContent = match.friendlyName;
-        mvtdResultBlock.style.display = 'block';
-      } else {
-        mvtdSubjectOut.textContent  = '';
-        mvtdFriendlyOut.textContent = '';
-        mvtdResultBlock.style.display = 'none';
-        announce('No match found. Check selections.');
-      }
-    });
-
-    // Reset MVTD form
-    mvtdReset.addEventListener('click', () => {
-      mvtdEventSelect.value = '';
-      mvtdLangSelect.value  = 'EN-US';
-      mvtdDaySelect.value   = '1 Day';
-      mvtdResultBlock.style.display = 'none';
-      savePrefs();
-    });
-
-    // Copy buttons
-    mvtdCopySubject.addEventListener('click', () => copyText(mvtdSubjectOut.textContent));
-    mvtdCopyFriendly.addEventListener('click', () => copyText(mvtdFriendlyOut.textContent));
-
-    /* ===== Initialize ===== */
-    populateMvtdEventOptions();
+    // Init localization
     buildLanguageList();
     loadPrefs();
-    document.getElementById('langButton').textContent = currentLang;
+    document.getElementById('langButton').textContent=currentLang;
     renderTable();
+
+    /* ===== MVTD module (separate; does not touch localization) ===== */
+    (function MVTDModule(){
+      const mvtdBtn=document.getElementById('mvtdBtn');
+      const mvtdForm=document.getElementById('mvtdForm');
+      const mvtdEvent=document.getElementById('mvtdEvent');
+      const mvtdLang=document.getElementById('mvtdLang');
+      const mvtdDay=document.getElementById('mvtdDay');
+      const mvtdSubmit=document.getElementById('mvtdSubmit');
+      const mvtdReset=document.getElementById('mvtdReset');
+      const mvtdResult=document.getElementById('mvtdResult');
+      const mvtdScopeOut=document.getElementById('mvtdScopeOut');
+      const mvtdLaunchOut=document.getElementById('mvtdLaunchOut');
+      const mvtdSubjectOut=document.getElementById('mvtdSubjectOut');
+      const mvtdFriendlyOut=document.getElementById('mvtdFriendlyOut');
+      const mvtdCopySubject=document.getElementById('mvtdCopySubject');
+      const mvtdCopyFriendly=document.getElementById('mvtdCopyFriendly');
+
+      if(!mvtdBtn || !mvtdForm) return;
+
+      const MVTD_DATA = [
+        // FY25 — add all rows here
+        // ---------- Azure & AI ----------
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Azure Virtual Training Day: AI Fundamentals',
+    languages: ['EN-US','EN-GB','FR-CA','FR-FR','ZH-CN','PT-BR','JA-JP','KO-KR','ES-XL','ES-ES','DE-DE'],
+    dayFormats: ['2 Day'],
+    launchDate: '20th September',
+    subjectLine: 'Thanks for joining Azure AI Fundamentals',
+    friendlyName: 'Microsoft Azure Virtual Training Day AI Fundamentals'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft 365 Virtual Training Day: Prepare Your Organization for Microsoft 365 Copilot',
+    languages: ['EN-US','EN-GB','FR-CA','FR-FR','ZH-CN','JA-JP','KO-KR','ES-ES','ES-XL','DE-DE','PT-BR'],
+    dayFormats: ['1 Day'],
+    launchDate: '20th September',
+    subjectLine: 'Thanks for joining Prepare Your Organization for Microsoft 365 Copilot',
+    friendlyName: 'Microsoft 365 Virtual Training Day Prepare Your Organization for Microsoft 365 Copilot'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Azure Virtual Training Day: Fundamentals',
+    languages: ['EN-US','EN-GB','FR-CA','JA-JP','KO-KR','ES-XL','ES-ES','PT-BR','ZH-CN','FR-FR','DE-DE'],
+    dayFormats: ['2 Day'],
+    launchDate: '11th October',
+    subjectLine: 'Thanks for joining Azure Fundamentals',
+    friendlyName: 'Microsoft Azure Virtual Training Day Fundamentals'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Azure Virtual Training Day: Develop Your Own Custom Copilots with Azure AI',
+    languages: ['EN-US','EN-GB','FR-CA','ES-XL','ES-ES','ZH-CN'],
+    dayFormats: ['2 Day'],
+    launchDate: '11th October',
+    subjectLine: 'Thanks for joining Develop Your Own Custom Copilots with Azure AI',
+    friendlyName: 'Microsoft Azure Virtual Training Day Develop Your Own Custom Copilots with Azure AI'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft 365 Virtual Training Day: Fundamentals',
+    languages: ['EN-US','EN-GB','FR-CA','FR-FR','ES-XL','ES-ES','DE-DE'],
+    dayFormats: ['1 Day'],
+    launchDate: '11th October',
+    subjectLine: 'Thanks for joining Microsoft 365 Fundamentals',
+    friendlyName: 'Microsoft 365 Virtual Training Day Fundamentals'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Azure Virtual Training Day: Accelerate Development with GitHub Copilot',
+    languages: ['EN-US','EN-GB','FR-CA'],
+    dayFormats: ['2 Day'],
+    launchDate: '25th October',
+    subjectLine: 'Thanks for joining Accelerate Development with GitHub Copilot',
+    friendlyName: 'Microsoft Azure Virtual Training Day Accelerate Development with GitHub Copilot'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Azure Virtual Training Day: Implement a Lakehouse with Microsoft Fabric',
+    languages: ['EN-US','EN-GB','FR-CA','DE-DE','FR-FR','ES-XL','ES-ES'],
+    dayFormats: ['2 Day'],
+    launchDate: '25th October',
+    subjectLine: 'Thanks for joining Implement a Lakehouse with Microsoft Fabric',
+    friendlyName: 'Microsoft Azure Virtual Training Day Implement a Lakehouse with Microsoft Fabric'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Security Virtual Training Day: Defend Against Threats with Extended Detection and Response',
+    languages: ['EN-US','EN-GB','FR-CA','ZH-CN','PT-BR','ES-XL','ES-ES','FR-FR','JA-JP','DE-DE'],
+    dayFormats: ['2 Day'],
+    launchDate: '25th October',
+    subjectLine: 'Thanks for joining Defend Against Threats with Extended Detection and Response',
+    friendlyName: 'Microsoft Security Virtual Training Day Defend Against Threats with Extended Detection and Response'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Power Platform Virtual Training Day: Create Apps and Automations with Power Platform',
+    languages: ['EN-US','EN-GB','FR-CA','ES-ES','ES-XL','PT-BR'],
+    dayFormats: ['2 Day'],
+    launchDate: '25th October',
+    subjectLine: 'Thanks for joining Create Apps and Automations with Power Platform',
+    friendlyName: 'Microsoft Power Platform Virtual Training Day Create Apps and Automations with Power Platform'
+  },
+
+  // ---------- Modern Work & Security (Nov launches) ----------
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft 365 Virtual Training Day: Manage Your Smart Workplace with Microsoft Teams',
+    languages: ['EN-US','EN-GB','FR-CA'],
+    dayFormats: ['2 Day'],
+    launchDate: '8th November',
+    subjectLine: 'Thanks for joining Manage Your Smart Workplace with Microsoft Teams',
+    friendlyName: 'Microsoft 365 Virtual Training Day Manage Your Smart Workplace with Microsoft Teams'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Security Virtual Training Day: Modernize your Security Operations with Microsoft Sentinel',
+    languages: ['EN-US','EN-GB','FR-CA'],
+    dayFormats: ['2 Day'],
+    launchDate: '8th November',
+    subjectLine: 'Thanks for joining Modernize your Security Operations with Microsoft Sentinel',
+    friendlyName: 'Microsoft Security Virtual Training Day Modernize your Security Operations with Microsoft Sentinel'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Security Virtual Training Day: Implement Data Security with Microsoft Purview',
+    languages: ['EN-US','EN-GB','FR-CA','PT-BR','ZH-CN','ES-XL','ES-ES','FR-FR','DE-DE','JA-JP'],
+    dayFormats: ['2 Day'],
+    launchDate: '8th November',
+    subjectLine: 'Thanks for joining Implement Data Security with Microsoft Purview',
+    friendlyName: 'Microsoft Security Virtual Training Day Implement Data Security with Microsoft Purview'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Power Platform Virtual Training Day: Fundamentals',
+    languages: ['EN-US','EN-GB','FR-CA','PT-BR','ES-ES','ES-XL'],
+    dayFormats: ['1 Day'],
+    launchDate: '22nd November',
+    subjectLine: 'Thanks for joining Power Platform Fundamentals',
+    friendlyName: 'Microsoft Power Platform Virtual Training Day Fundamentals'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Azure Virtual Training Day: Migrate and Secure Windows Server and SQL Server Workloads',
+    languages: ['EN-US','EN-GB','FR-CA','JA-JP','FR-FR','ZH-CN','PT-BR','KO-KR','ES-XL','ES-ES'],
+    dayFormats: ['2 Day'],
+    launchDate: '22nd November',
+    subjectLine: 'Thanks for joining Azure Migrate and Secure Windows Server and SQL Server Workloads',
+    friendlyName: 'Microsoft Azure Virtual Training Day Migrate and Secure Windows Server and SQL Server Workloads'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Power Platform Virtual Training Day: Create Agents in Microsoft Copilot Studio',
+    languages: ['EN-US','EN-GB','FR-CA','ES-ES','ES-XL','PT-BR'],
+    dayFormats: ['1 Day'],
+    launchDate: '22nd November',
+    subjectLine: 'Thanks for joining Power Platform Create Agents in Microsoft Copilot Studio',
+    friendlyName: 'Microsoft Power Platform Virtual Training Day Create Agents in Microsoft Copilot Studio'
+  },
+
+  // ---------- December launches ----------
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Azure Virtual Training Day: Data Fundamentals',
+    languages: ['EN-US','EN-GB','FR-CA','ZH-CN','FR-FR','PT-BR','JA-JP','DE-DE','KO-KR','ES-XL','ES-ES'],
+    dayFormats: ['2 Day'],
+    launchDate: '9th December',
+    subjectLine: 'Thanks for joining Azure Data Fundamentals',
+    friendlyName: 'Microsoft Azure Virtual Training Day Data Fundamentals'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Security Virtual Training Day: Security, Compliance, and Identity Fundamentals',
+    languages: ['EN-US','EN-GB','FR-CA','ZH-CN','PT-BR','FR-FR','JA-JP','KO-KR','ES-ES','ES-XL','DE-DE'],
+    dayFormats: ['2 Day'],
+    launchDate: '9th December',
+    subjectLine: 'Thanks for joining Security, Compliance, and Identity Fundamentals',
+    friendlyName: 'Microsoft Security Virtual Training Day Security Compliance and Identity Fundamentals'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Azure Virtual Training Day: Migrate and Modernize your Apps for AI-powered Solutions',
+    languages: ['EN-US','EN-GB','FR-CA'],
+    dayFormats: ['2 Day'],
+    launchDate: '9th December',
+    subjectLine: 'Thanks for joining Migrate and Modernize Your Apps for AI-powered Solutions',
+    friendlyName: 'Microsoft Azure Virtual Training Day Migrate and Modernize your Apps for AI powered Solutions'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft 365 Virtual Training Day: Enable Your Frontline with Secure, Simple, and Smart Solutions',
+    languages: ['EN-US','FR-CA','EN-GB'],
+    dayFormats: ['2 Day'],
+    launchDate: '30th December',
+    subjectLine: 'Thanks for joining Enable Your Frontline with Secure, Simple, and Smart Solutions',
+    friendlyName: 'Microsoft 365 Virtual Training Day Enable Your Frontline with Secure Simple and Smart Solutions'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Azure Virtual Training Day: Mastering Reliability, Security, and Performance on Azure',
+    languages: ['EN-US','FR-CA','EN-GB'],
+    dayFormats: ['2 Day'],
+    launchDate: '30th December',
+    subjectLine: 'Thanks for joining Mastering Reliability, Security, and Performance on Azure',
+    friendlyName: 'Microsoft Azure Virtual Training Day Mastering Reliability Security and Performance on Azure'
+  },
+
+  // ---------- Digital Simulive & PRC variants ----------
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Azure Virtual Training Day: Migrate Linux and PostgreSQL to Azure (Digital Simulive)',
+    languages: ['EN-US','EN-GB','FR-CA','JA-JP','FR-FR','PT-BR','ZH-CN','ZH-CN (PRC)','ES-XL','ES-ES'],
+    dayFormats: ['1 Day'],
+    launchDate: "10th January '25",
+    subjectLine: 'Thanks for joining Migrate Linux and PostgreSQL to Azure',
+    friendlyName: 'Microsoft Azure Virtual Training Day Migrate Linux and PostgreSQL to Azure'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Security Virtual Training Day: Defend Against Threats with Extended Detection and Response - PRC',
+    languages: ['ZH-CN'],
+    dayFormats: ['2 Day'],
+    launchDate: "10th January '25",
+    subjectLine: 'Not required',
+    friendlyName: 'Microsoft Security Virtual Training Day Defend Against Threats with Extended Detection and Response'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Security Virtual Training Day: Implement Data Security with Microsoft Purview - PRC (Digital Simulive)',
+    languages: ['ZH-CN'],
+    dayFormats: ['2 Day'],
+    launchDate: "17th January '25",
+    subjectLine: 'Not required',
+    friendlyName: 'Microsoft Security Virtual Training Day Implement Data Security with Microsoft Purview'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Azure Virtual Training Day: Fundamentals - PRC (Digital Simulive)',
+    languages: ['ZH-CN'],
+    dayFormats: ['2 Day'],
+    launchDate: '31st January',
+    subjectLine: 'Not required',
+    friendlyName: 'Microsoft Azure Virtual Training Day Fundamentals'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Azure Virtual Training Day: Develop Your Own Custom Copilots with Azure AI - PRC (Digital Simulive)',
+    languages: ['ZH-CN'],
+    dayFormats: ['2 Day'],
+    launchDate: '31st January',
+    subjectLine: 'Not required',
+    friendlyName: 'Microsoft Azure Virtual Training Day Develop Your Own Custom Copilots with Azure AI'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Azure Virtual Training Day: Data Fundamentals - PRC',
+    languages: ['ZH-CN'],
+    dayFormats: ['2 Day'],
+    launchDate: '7th Feb',
+    subjectLine: 'Not required',
+    friendlyName: 'Microsoft Azure Virtual Training Day Data Fundamentals'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Security Virtual Training Day: Security, Compliance, and Identity Fundamentals - PRC',
+    languages: ['ZH-CN'],
+    dayFormats: ['2 Day'],
+    launchDate: '7th Feb',
+    subjectLine: 'Not required',
+    friendlyName: 'Microsoft Security Virtual Training Day Security Compliance and Identity Fundamentals'
+  },
+
+  // ---------- February Digital Simulive ----------
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Azure Virtual Training Day: Migrate and Modernize SAP on the Microsoft Cloud (Digital Simulive)',
+    languages: ['EN-US','EN-GB','FR-CA'],
+    dayFormats: ['1 Day'],
+    launchDate: '14th Feb',
+    subjectLine: 'Thanks for joining Migrate and Modernize SAP on the Microsoft Cloud',
+    friendlyName: 'Microsoft Azure Virtual Training Day Migrate and Modernize SAP on the Microsoft Cloud'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Azure Virtual Training Day: Build an AI App with Azure using RAG (Digital Simulive)',
+    languages: ['EN-US','EN-GB','FR-CA'],
+    dayFormats: ['1 Day'],
+    launchDate: '14th Feb',
+    subjectLine: 'Thanks for joining Build an AI App with Azure Using RAG',
+    friendlyName: 'Microsoft Azure Virtual Training Day Build an AI App with Azure using RAG'
+  },
+
+  // ---------- Dynamics, Intune (March), ERP ----------
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Dynamics 365 Virtual Training Day: Fundamentals (CRM) (Digital Simulive)',
+    languages: ['EN-US','EN-GB','FR-CA'],
+    dayFormats: ['2 Day'],
+    launchDate: '—', // EN-US launch date not explicitly stated beyond "EN-US"
+    subjectLine: 'Thanks for joining Dynamics 365 Fundamentals (CRM)',
+    friendlyName: 'Microsoft Dynamics 365 Virtual Training Day Fundamentals CRM'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft 365 Virtual Training Day: Manage Windows Endpoints with Microsoft Intune',
+    languages: ['EN-US','EN-GB','FR-CA'],
+    dayFormats: ['2 Day'],
+    launchDate: '14th March',
+    subjectLine: 'Thanks for joining Manage Windows Endpoints with Microsoft Intune',
+    friendlyName: 'Microsoft 365 Virtual Training Day Manage Windows Endpoints with Microsoft Intune'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Dynamics 365 Virtual Training Day: Fundamentals (ERP)',
+    languages: ['EN-US','EN-GB','FR-CA'],
+    dayFormats: ['2 Day'],
+    launchDate: '14th March',
+    subjectLine: 'Thanks for joining Dynamics 365 Fundamentals (ERP)',
+    friendlyName: 'Microsoft Dynamics 365 Virtual Training Day Fundamentals ERP'
+  },
+
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Dynamics 365 Virtual Training Day: Modernize Service',
+    languages: ['EN-US','EN-GB','FR-CA'],
+    dayFormats: ['1 Day'],
+    launchDate: '21st March',
+    subjectLine: 'Thanks for joining Modernize Service',
+    friendlyName: 'Microsoft Dynamics 365 Virtual Training Day Modernize Service'
+  },
+
+  // ---------- Defender for Cloud (July) ----------
+  {
+    scope: 'FY25',
+    eventSubType: 'Microsoft Security Virtual Training Day: Strengthen Cloud Security with Microsoft Defender for Cloud',
+    languages: ['EN-US'],
+    dayFormats: ['2 Day'],
+    launchDate: '2nd July',
+    subjectLine: 'Thanks for joining Strengthen Cloud Security with Microsoft Defender for Cloud',
+    friendlyName: 'Microsoft Security Virtual Training Day Strengthen Cloud Security with Microsoft Defender for Cloud'
+  },
+
+        // FY26 — English primary language only
+{ scope:'FY26', eventSubType:'Microsoft Virtual Training Day: Develop Generative AI Apps with Azure AI Foundry', languages:['EN-US'], dayFormats:['2 Day'], launchDate:'3rd October', subjectLine:'Thanks for joining Develop Generative AI Apps with Azure AI Foundry', friendlyName:'Microsoft Virtual Training Day: Develop Generative AI Apps with Azure AI Foundry' },
+{ scope:'FY26', eventSubType:'Microsoft Virtual Training Day: Build Agentic AI Solutions with Azure AI Foundry', languages:['EN-US'], dayFormats:['1 Day'], launchDate:'3rd October', subjectLine:'Thanks for joining Build Agentic AI Solutions with Azure AI Foundry', friendlyName:'Microsoft Virtual Training Day: Build Agentic AI Solutions with Azure AI Foundry' },
+{ scope:'FY26', eventSubType:'Microsoft Virtual Training Day: Secure and Administer Microsoft 365 Copilot and Agents', languages:['EN-US'], dayFormats:['1 Day'], launchDate:'3rd October', subjectLine:'Thanks for joining Secure and Administer Microsoft 365 Copilot and Agents', friendlyName:'Microsoft Virtual Training Day: Secure and Administer Microsoft 365 Copilot and Agents' },
+{ scope:'FY26', eventSubType:'Microsoft Virtual Training Day: Transform your Everyday Business Processes with Agents', languages:['EN-US'], dayFormats:['1 Day'], launchDate:'3rd October', subjectLine:'Thanks for joining Transform your Everyday Business Processes with Agents', friendlyName:'Microsoft Virtual Training Day: Transform your Everyday Business Processes with Agents' },
+{ scope:'FY26', eventSubType:'Microsoft Virtual Training Day: Create agents in Microsoft Copilot Studio', languages:['EN-US'], dayFormats:['1 Day'], launchDate:'31st October', subjectLine:'Thanks for joining Create agents in Microsoft Copilot Studio', friendlyName:'Microsoft Virtual Training Day: Create agents in Microsoft Copilot Studio' },
+{ scope:'FY26', eventSubType:'Microsoft Virtual Training Day: Introduction to Microsoft Security', languages:['EN-US'], dayFormats:['1 Day'], launchDate:'3rd October', subjectLine:'Thanks for joining Introduction to Microsoft Security', friendlyName:'Microsoft Virtual Training Day: Introduction to Microsoft Security' },
+{ scope:'FY26', eventSubType:'Microsoft Virtual Training Day: Predict and Defend Against Cybersecurity Threats', languages:['EN-US'], dayFormats:['1 Day'], launchDate:'10th October', subjectLine:'Thanks for joining Predict and Defend Against Cybersecurity Threats', friendlyName:'Microsoft Virtual Training Day: Predict and Defend Against Cybersecurity Threats' },
+{ scope:'FY26', eventSubType:'Microsoft Virtual Training Day: Introduction to Microsoft Power Platform', languages:['EN-US'], dayFormats:['2 Day'], launchDate:'15th November', subjectLine:'Thanks for joining Introduction to Microsoft Power Platform', friendlyName:'Microsoft Virtual Training Day: Introduction to Microsoft Power Platform' },
+      ];
+
+      function populateEvents(){
+        mvtdEvent.innerHTML='';
+        const placeholder=document.createElement('option');
+        placeholder.value=''; placeholder.textContent='Select...'; placeholder.disabled=true; placeholder.selected=true;
+        mvtdEvent.appendChild(placeholder);
+
+        const g25=document.createElement('optgroup'); g25.label='Scope as of today for FY25 MVTD';
+        const g26=document.createElement('optgroup'); g26.label='Scope as of today for FY26 MVTD (Primary language: English)';
+
+        const seen=new Set();
+        MVTD_DATA.forEach(item=>{
+          const key=`${item.scope}|${item.eventSubType}`; if(seen.has(key)) return; seen.add(key);
+          const opt=document.createElement('option'); opt.value=item.eventSubType; opt.textContent=item.eventSubType; opt.dataset.scope=item.scope;
+          (item.scope==='FY25'?g25:g26).appendChild(opt);
+        });
+        mvtdEvent.appendChild(g25); mvtdEvent.appendChild(g26);
+      }
+
+      function onEventChange(){
+        const ev=mvtdEvent.value;
+        const scope=mvtdEvent.selectedOptions[0]?.dataset.scope || '';
+        const entry=MVTD_DATA.find(r=>r.eventSubType===ev && r.scope===scope);
+        mvtdLang.innerHTML=''; mvtdDay.innerHTML='';
+        if(!entry) return;
+        entry.languages.forEach(code=>{const opt=document.createElement('option'); opt.value=code; opt.textContent=code; mvtdLang.appendChild(opt);});
+        entry.dayFormats.forEach(df=>{const opt=document.createElement('option'); opt.value=df; opt.textContent=df; mvtdDay.appendChild(opt);});
+      }
+
+      function onSubmit(){
+        const ev=mvtdEvent.value; const scope=mvtdEvent.selectedOptions[0]?.dataset.scope || '';
+        const lang=mvtdLang.value; const day=mvtdDay.value;
+        if(!ev || !lang || !day){announce('Please select Event, Language, and Day Format');return;}
+        const match=MVTD_DATA.find(i=>i.eventSubType===ev && i.scope===scope && i.languages.includes(lang) && i.dayFormats.includes(day));
+        if(match){
+          mvtdScopeOut.textContent=match.scope;
+          mvtdLaunchOut.textContent=match.launchDate||'—';
+          mvtdSubjectOut.textContent=match.subjectLine||'';
+          mvtdFriendlyOut.textContent=match.friendlyName||'';
+          mvtdResult.style.display='block';
+        }else{
+          mvtdResult.style.display='none';
+          announce('No match found. Check selections.');
+        }
+      }
+
+      function onReset(){
+        populateEvents();
+        mvtdLang.innerHTML=''; mvtdDay.innerHTML='';
+        mvtdResult.style.display='none';
+      }
+
+      mvtdBtn.addEventListener('click',()=>{const hidden=mvtdForm.style.display==='none'||mvtdForm.style.display===''; mvtdForm.style.display=hidden?'block':'none'; mvtdForm.setAttribute('aria-hidden', String(!hidden)); mvtdBtn.setAttribute('aria-expanded', String(hidden));});
+      mvtdEvent.addEventListener('change', onEventChange);
+      mvtdSubmit.addEventListener('click', onSubmit);
+      mvtdReset.addEventListener('click', onReset);
+      mvtdCopySubject.addEventListener('click', ()=>copyText(mvtdSubjectOut.textContent));
+      mvtdCopyFriendly.addEventListener('click', ()=>copyText(mvtdFriendlyOut.textContent));
+
+      populateEvents();
+    })();
   </script>
 </body>
 </html>
-
-
